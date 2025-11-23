@@ -24,7 +24,6 @@
             -webkit-user-select: none;
         }
 
-        /* Header com Gradiente Guardião */
         .header-bg {
             background: linear-gradient(135deg, #F27A23 0%, #e06000 100%);
             border-bottom-left-radius: 30px;
@@ -32,22 +31,15 @@
             box-shadow: 0 10px 25px -5px rgba(242, 122, 35, 0.3);
         }
 
-        /* Cards de Documentos */
         .doc-card {
             transition: all 0.3s ease;
             border: 1px solid #eee;
         }
-        .doc-card:active {
-            transform: scale(0.98);
-        }
+        .doc-card:active { transform: scale(0.98); }
 
         .status-badge {
-            font-size: 0.7rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 0.7rem; padding: 4px 10px; border-radius: 20px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
         }
 
         .status-pendente { background-color: #FEF3C7; color: #D97706; }
@@ -55,20 +47,11 @@
         .status-rejeitado { background-color: #FEE2E2; color: #DC2626; }
         .status-vazio { background-color: #F3F4F6; color: #6B7280; }
 
-        /* Botão Flutuante de Upload */
-        .upload-btn-overlay {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(4px);
-        }
-
         .hidden-view { display: none !important; }
-        
-        /* Animações */
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
     </style>
 
-    <!-- Bloqueio de Inspeção -->
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault()); 
         document.onkeydown = function(e) {
@@ -79,13 +62,13 @@
 </head>
 <body class="flex flex-col bg-gray-50">
 
-    <!-- 1. Loading Screen -->
+    <!-- Loading Screen -->
     <div id="pageLoading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
         <div class="w-16 h-16 border-4 border-orange-100 border-t-[#F27A23] rounded-full animate-spin mb-4"></div>
         <p class="text-gray-500 font-medium text-sm">Verificando perfil...</p>
     </div>
 
-    <!-- 2. Conteúdo Principal -->
+    <!-- Conteúdo Principal -->
     <div id="mainContent" class="hidden-view flex-1 flex flex-col h-full relative">
         
         <!-- Header -->
@@ -103,7 +86,6 @@
                 <button onclick="logout()" class="text-white/80 hover:text-white"><i data-lucide="log-out" class="w-5 h-5"></i></button>
             </div>
             
-            <!-- Status Geral -->
             <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
                 <div class="flex items-center gap-3">
                     <div id="globalStatusIcon" class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
@@ -117,12 +99,10 @@
 
         <!-- Lista de Documentos -->
         <div class="flex-1 overflow-y-auto px-6 -mt-6 pb-24 z-20">
-            <div class="bg-white rounded-2xl shadow-xl p-2 space-y-2" id="documentsList">
-                <!-- Os cards serão inseridos aqui via JS -->
-            </div>
+            <div class="bg-white rounded-2xl shadow-xl p-2 space-y-2" id="documentsList"></div>
         </div>
 
-        <!-- Botão de Ação (Se tudo aprovado) -->
+        <!-- Botão de Ação (Final) -->
         <div id="actionArea" class="hidden-view fixed bottom-0 left-0 w-full p-6 bg-white border-t border-gray-100 z-30">
             <button onclick="goToDashboard()" class="w-full bg-green-500 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-green-600 transition-all flex items-center justify-center gap-2">
                 <i data-lucide="check-circle"></i> Tudo Pronto! Acessar App
@@ -130,11 +110,10 @@
         </div>
     </div>
 
-    <!-- 3. Modal de Upload -->
+    <!-- Modal Upload -->
     <div id="uploadModal" class="hidden-view fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-3xl p-6 modal-enter shadow-2xl">
             <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
-            
             <h3 class="text-lg font-bold text-gray-800 mb-1" id="modalDocTitle">Enviar Documento</h3>
             <p class="text-sm text-gray-500 mb-6">Tire uma foto nítida ou escolha da galeria.</p>
 
@@ -153,38 +132,28 @@
                 </div>
             </div>
 
-            <button id="btnSendDoc" onclick="submitDocument()" disabled class="w-full bg-[#F27A23] disabled:bg-gray-300 text-white font-bold py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
-                Enviar para Análise
-            </button>
-            
+            <button id="btnSendDoc" onclick="submitDocument()" disabled class="w-full bg-[#F27A23] disabled:bg-gray-300 text-white font-bold py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">Enviar para Análise</button>
             <button onclick="closeModal()" class="w-full text-gray-400 font-medium py-3 mt-2 text-sm">Cancelar</button>
         </div>
     </div>
 
-    <!-- Toast -->
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-xl text-white font-semibold text-sm z-[60] transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none flex items-center gap-2"></div>
 
     <script>
-        // --- ESTADO ---
         let currentUser = null;
         let token = null;
-        let currentDocType = null; // Qual documento está sendo enviado
-        
-        // Lista de Documentos Obrigatórios para Prestadores
+        let currentDocType = null; 
         const REQUIRED_DOCS = [
             { type: 'RG_FRENTE', label: 'RG ou CNH (Frente)', icon: 'user-square' },
             { type: 'RG_VERSO', label: 'RG ou CNH (Verso)', icon: 'user-square' },
             { type: 'ANTECEDENTES', label: 'Antecedentes Criminais', icon: 'shield-alert' },
             { type: 'RESIDENCIA', label: 'Comp. de Residência', icon: 'home' }
         ];
+        let userDocuments = []; 
 
-        let userDocuments = []; // Armazena o que veio da API
-
-        // --- INICIALIZAÇÃO ---
         document.addEventListener('DOMContentLoaded', () => {
             try { if (window.lucide) window.lucide.createIcons(); } catch(e){}
             
-            // 1. Verificar Sessão
             const u = localStorage.getItem('guardiao_user');
             const t = localStorage.getItem('guardiao_token');
 
@@ -196,32 +165,24 @@
             currentUser = JSON.parse(u);
             token = t;
 
-            // 2. Verificar Tipo de Usuário (Lógica Principal)
             checkUserTypeAndRoute();
         });
 
         function checkUserTypeAndRoute() {
-            // O prompt diz: "Idoso e Familia" não precisa passar por verificação.
-            // "Babá e Cuidador" (prestador) precisa.
-            
-            // Vamos checar o tipo_acesso que vem do login (ou 'usuario' ou 'prestador'/'cuidador')
-            const tipo = currentUser.tipo_acesso || 'usuario'; // default usuario
+            const tipo = currentUser.tipo_acesso || 'usuario'; 
 
+            // ROTEAMENTO AUTOMÁTICO
             if (tipo === 'usuario' || tipo === 'familiar' || tipo === 'idoso') {
-                // É cliente -> Pula verificação
-                console.log("Usuário Cliente: Redirecionando para Home...");
-                window.location.href = 'home.html'; // Redirecionamento hipotético para a Home do app
+                // Cliente não precisa de docs -> Vai para Home do Cliente
+                window.location.href = 'Sistemafamiliaidoso/boas.vindas.html'; 
             } else {
-                // É prestador -> Carrega a tela de documentos
-                console.log("Usuário Prestador: Verificando documentos...");
+                // Prestador precisa de docs -> Carrega lista
                 loadDocuments();
             }
         }
 
-        // --- CARREGAR DOCUMENTOS DA API ---
         async function loadDocuments() {
             try {
-                // API 1.2: Listar Documentos
                 const res = await apiRequest(`/documentos/usuario/${currentUser.id}`);
                 
                 if (res.success) {
@@ -235,14 +196,12 @@
             } catch (error) {
                 console.error(error);
                 showToast('Erro ao carregar documentos', 'error');
-                // Fallback visual se API falhar (para não travar a tela branca)
                 document.getElementById('pageLoading').classList.add('hidden-view');
                 document.getElementById('mainContent').classList.remove('hidden-view');
                 renderDocumentsList(); 
             }
         }
 
-        // --- RENDERIZAÇÃO ---
         function renderDocumentsList() {
             const container = document.getElementById('documentsList');
             container.innerHTML = '';
@@ -251,35 +210,21 @@
             let pendingCount = 0;
 
             REQUIRED_DOCS.forEach(reqDoc => {
-                // Procura se esse documento já foi enviado na lista da API
-                // A comparação é feita pelo 'tipo_documento'
                 const existingDoc = userDocuments.find(d => d.tipo_documento === reqDoc.label || d.tipo_documento === reqDoc.type);
-                
-                let statusHtml = '';
-                let actionHtml = '';
-                let statusClass = 'status-vazio';
-                let statusText = 'Não Enviado';
+                let statusHtml = '', actionHtml = '', statusClass = 'status-vazio', statusText = 'Não Enviado';
 
                 if (existingDoc) {
                     if (existingDoc.status === 'Aprovado') {
-                        statusClass = 'status-aprovado';
-                        statusText = 'Aprovado';
+                        statusClass = 'status-aprovado'; statusText = 'Aprovado';
                         actionHtml = `<div class="text-green-500"><i data-lucide="check-circle" class="w-6 h-6"></i></div>`;
                     } else if (existingDoc.status === 'Rejeitado') {
-                        statusClass = 'status-rejeitado';
-                        statusText = 'Rejeitado';
-                        allApproved = false;
+                        statusClass = 'status-rejeitado'; statusText = 'Rejeitado'; allApproved = false;
                         actionHtml = `<button onclick="openUploadModal('${reqDoc.label}')" class="text-[#F27A23] text-xs font-bold border border-[#F27A23] px-3 py-1.5 rounded-lg hover:bg-orange-50">Reenviar</button>`;
                     } else {
-                        // Pendente
-                        statusClass = 'status-pendente';
-                        statusText = 'Em Análise';
-                        allApproved = false;
-                        pendingCount++;
+                        statusClass = 'status-pendente'; statusText = 'Em Análise'; allApproved = false; pendingCount++;
                         actionHtml = `<div class="text-yellow-500 animate-pulse"><i data-lucide="clock" class="w-6 h-6"></i></div>`;
                     }
                 } else {
-                    // Não enviado
                     allApproved = false;
                     actionHtml = `<button onclick="openUploadModal('${reqDoc.label}')" class="bg-[#F27A23] text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:bg-orange-600 active:scale-95 transition-transform">Enviar</button>`;
                 }
@@ -288,21 +233,13 @@
                 card.className = 'doc-card bg-gray-50 rounded-xl p-4 flex items-center justify-between animate-slide-up';
                 card.innerHTML = `
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-gray-200 text-gray-500">
-                            <i data-lucide="${reqDoc.icon}" class="w-5 h-5"></i>
-                        </div>
-                        <div>
-                            <h4 class="text-sm font-bold text-gray-800">${reqDoc.label}</h4>
-                            <span class="status-badge ${statusClass}">${statusText}</span>
-                        </div>
+                        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-gray-200 text-gray-500"><i data-lucide="${reqDoc.icon}" class="w-5 h-5"></i></div>
+                        <div><h4 class="text-sm font-bold text-gray-800">${reqDoc.label}</h4><span class="status-badge ${statusClass}">${statusText}</span></div>
                     </div>
-                    <div>
-                        ${actionHtml}
-                    </div>
+                    <div>${actionHtml}</div>
                 `;
                 container.appendChild(card);
             });
-
             lucide.createIcons();
             updateGlobalStatus(allApproved, pendingCount);
         }
@@ -315,7 +252,7 @@
             if (allApproved) {
                 statusText.innerText = "Perfil Verificado";
                 statusIcon.className = "w-2 h-2 rounded-full bg-green-500";
-                actionArea.classList.remove('hidden-view'); // Mostra botão de entrar
+                actionArea.classList.remove('hidden-view'); 
             } else {
                 actionArea.classList.add('hidden-view');
                 if (pendingCount > 0) {
@@ -328,38 +265,23 @@
             }
         }
 
-        // --- UPLOAD ---
         function openUploadModal(docLabel) {
             currentDocType = docLabel;
             document.getElementById('modalDocTitle').innerText = docLabel;
-            
-            // Reset form
             document.getElementById('fileInput').value = '';
             document.getElementById('uploadPlaceholder').classList.remove('hidden');
-            document.getElementById('uploadPlaceholder').classList.add('block');
-            document.getElementById('uploadPreview').classList.remove('flex');
             document.getElementById('uploadPreview').classList.add('hidden');
             document.getElementById('btnSendDoc').disabled = true;
             document.getElementById('btnSendDoc').innerText = "Enviar para Análise";
-
             document.getElementById('uploadModal').classList.remove('hidden-view');
         }
 
-        function closeModal() {
-            document.getElementById('uploadModal').classList.add('hidden-view');
-        }
+        function closeModal() { document.getElementById('uploadModal').classList.add('hidden-view'); }
 
         function handleFileSelect(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
-                
-                // Validar tamanho (5MB)
-                if(file.size > 5 * 1024 * 1024) {
-                    showToast('Arquivo muito grande (Máx 5MB)', 'error');
-                    input.value = '';
-                    return;
-                }
-
+                if(file.size > 5 * 1024 * 1024) { showToast('Arquivo muito grande (Máx 5MB)', 'error'); input.value = ''; return; }
                 document.getElementById('uploadPlaceholder').classList.add('hidden');
                 document.getElementById('uploadPreview').classList.remove('hidden');
                 document.getElementById('uploadPreview').classList.add('flex');
@@ -375,65 +297,43 @@
 
             const btn = document.getElementById('btnSendDoc');
             const originalText = btn.innerText;
-            btn.disabled = true;
-            btn.innerText = "Enviando...";
+            btn.disabled = true; btn.innerText = "Enviando...";
 
             try {
-                // PASSO 1: Upload do Arquivo (/api/arquivos)
-                // Como a documentação do /api/arquivos não foi detalhada explicitamente,
-                // assumimos um FormData padrão multipart.
                 const formData = new FormData();
                 formData.append('arquivo', file);
-
-                // Nota: apiRequest do apisistema.js lida com JSON.
-                // Para upload de arquivo (Multipart), faremos fetch direto usando a base URL.
                 const uploadUrl = `${API_BASE_URL}/arquivos`;
-                const token = localStorage.getItem('guardiao_token');
-
+                
                 console.log("[Upload] Enviando arquivo...");
                 const uploadRes = await fetch(uploadUrl, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                        // Content-Type é automático com FormData
-                    },
+                    headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
                 });
 
                 const uploadData = await uploadRes.json();
-                
-                if (!uploadRes.ok || !uploadData.success) {
-                    throw new Error(uploadData.message || "Erro no upload do arquivo");
-                }
+                if (!uploadRes.ok || !uploadData.success) throw new Error(uploadData.message || "Erro no upload do arquivo");
 
-                const arquivoId = uploadData.data.id; // ID retornado pela API de arquivos
-
-                // PASSO 2: Vincular Documento (/api/documentos)
-                const docPayload = {
-                    arquivo_id: arquivoId,
-                    tipo_documento: currentDocType
-                };
-
+                const arquivoId = uploadData.data.id; 
+                const docPayload = { arquivo_id: arquivoId, tipo_documento: currentDocType };
                 const docRes = await apiRequest('/documentos', 'POST', docPayload);
 
                 if (docRes.success) {
                     showToast('Documento enviado com sucesso!', 'success');
                     closeModal();
-                    loadDocuments(); // Recarrega a lista
-                } else {
-                    throw new Error(docRes.message);
-                }
+                    loadDocuments(); 
+                } else { throw new Error(docRes.message); }
 
             } catch (error) {
                 console.error(error);
                 showToast(error.message || 'Falha no envio', 'error');
-                btn.innerText = originalText;
-                btn.disabled = false;
+                btn.innerText = originalText; btn.disabled = false;
             }
         }
 
         function goToDashboard() {
-            window.location.href = 'home.html'; // Tela principal do App
+            // ROTA FINAL DO PRESTADOR
+            window.location.href = 'Sistemaprestador/boas.vindas.html';
         }
 
         function logout() {
@@ -442,19 +342,12 @@
             window.location.href = 'login_guardiao.html';
         }
 
-        // --- API REQUEST GENÉRICO ---
         async function apiRequest(endpoint, method = 'GET', body = null) {
             if (typeof API_BASE_URL === 'undefined') throw new Error("Config API ausente.");
-            
             const url = `${API_BASE_URL}${endpoint}`;
-            const headers = { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            };
-            
+            const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
             const options = { method, headers };
             if (body) options.body = JSON.stringify(body);
-            
             const response = await fetch(url, options);
             return await response.json();
         }
