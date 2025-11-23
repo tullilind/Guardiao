@@ -11,26 +11,64 @@
     <!-- Ícones (Lucide) -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- 1. Importando APENAS a variável API_BASE_URL -->
+    <!-- Importação da API Base -->
     <script src="apisistema.js"></script>
 
     <style>
         body { font-family: 'Montserrat', sans-serif; background-color: #F27A23; }
+        
+        /* Tipografia Decorativa */
         .outline-text { color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.5); font-weight: 900; line-height: 1; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; margin-bottom: 10px; font-size: 0.95rem; line-height: 1.4; animation: fadeIn 0.3s ease-out; }
-        .chat-bot { background-color: #ffffff; color: #374151; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .chat-user { background-color: #FDBA74; color: #7c2d12; align-self: flex-end; border-bottom-right-radius: 4px; font-weight: 500; text-align: right; }
-        .chat-container::-webkit-scrollbar { width: 6px; }
+        
+        /* Animações */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeInUp 0.4s ease-out forwards; }
+        
+        /* Estilo Profissional do Chat */
+        .chat-bubble {
+            max-width: 85%;
+            padding: 14px 18px;
+            border-radius: 18px;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            animation: fadeInUp 0.3s ease-out;
+            position: relative;
+        }
+        
+        .chat-bot {
+            background-color: #ffffff;
+            color: #374151;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            border: 1px solid #f3f4f6;
+        }
+        
+        .chat-user {
+            background-color: #FDBA74; /* Laranja suave */
+            color: #7c2d12;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+            font-weight: 600;
+            text-align: right;
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
+        }
+
+        /* Scrollbar Invisível mas funcional */
+        .chat-container::-webkit-scrollbar { width: 4px; }
         .chat-container::-webkit-scrollbar-track { background: transparent; }
-        .chat-container::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.3); border-radius: 10px; }
+        .chat-container::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 10px; }
+
         .hidden-view { display: none !important; }
+        
+        /* Ajuste para inputs focados não darem zoom no iPhone */
+        input, select, textarea { font-size: 16px !important; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden relative bg-[#F27A23]">
 
-    <!-- FUNDO DECORATIVO -->
+    <!-- ================= FUNDO DECORATIVO ================= -->
     <div class="pointer-events-none select-none absolute inset-0 z-0">
         <div class="absolute left-0 bottom-0 h-full flex items-center justify-center w-20">
             <h1 class="outline-text text-[15vh] md:text-[20vh] tracking-widest transform -rotate-90 whitespace-nowrap origin-center opacity-60">GUARDIÃO</h1>
@@ -45,67 +83,111 @@
         </div>
     </div>
 
-    <!-- ÁREA PRINCIPAL -->
+    <!-- ================= ÁREA PRINCIPAL ================= -->
     <div class="relative z-10 w-full h-full flex flex-col items-center justify-center px-4 md:px-8">
+        
         <!-- LOGO -->
-        <div class="mb-6 flex justify-center transition-all duration-500" id="logoContainer">
-            <img src="logo.sem.png" alt="Logo Guardião" class="w-24 md:w-32 drop-shadow-md">
+        <div class="mb-4 flex justify-center transition-all duration-500 relative z-20" id="logoContainer">
+            <img src="logo.sem.png" alt="Logo Guardião" class="w-24 md:w-28 drop-shadow-lg">
         </div>
 
-        <!-- CONTAINER VIEWS -->
-        <div class="w-full max-w-md bg-white/10 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20 relative overflow-hidden transition-all duration-300" id="mainCard" style="min-height: 400px;">
+        <!-- CONTAINER DOS VIEWS (CARD) -->
+        <div class="w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-white/50 relative overflow-hidden transition-all duration-500 ease-in-out flex flex-col" id="mainCard" style="min-height: 420px; max-height: 85vh;">
             
-            <!-- VIEW 1: LOGIN -->
-            <div id="viewLogin" class="animate-fade-in h-full flex flex-col justify-center">
-                <h2 class="text-white text-2xl font-bold text-center mb-6">Bem-vindo</h2>
-                <form id="loginForm" class="space-y-4">
+            <!-- VIEW 1: LOGIN FORM -->
+            <div id="viewLogin" class="animate-fade-in flex flex-col justify-center p-8 h-full">
+                <div class="text-center mb-8">
+                    <h2 class="text-gray-800 text-2xl font-bold">Bem-vindo</h2>
+                    <p class="text-gray-500 text-sm mt-1">Acesse sua conta para continuar</p>
+                </div>
+                
+                <form id="loginForm" class="space-y-5">
                     <div class="relative group">
-                        <i data-lucide="user" class="absolute left-3 top-3.5 text-gray-400 w-5 h-5"></i>
-                        <input type="text" id="loginCpf" placeholder="CPF ou CNPJ" maxlength="18" class="w-full bg-white text-gray-700 rounded-lg py-3 px-10 outline-none focus:ring-2 focus:ring-orange-300 shadow-sm font-medium placeholder-gray-400">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="user" class="text-gray-400 w-5 h-5"></i>
+                        </div>
+                        <input type="text" id="loginCpf" placeholder="CPF ou CNPJ" maxlength="18" 
+                            class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all shadow-sm font-medium">
                     </div>
                     <div class="relative group">
-                        <i data-lucide="lock" class="absolute left-3 top-3.5 text-gray-400 w-5 h-5"></i>
-                        <input type="password" id="loginSenha" placeholder="Senha" class="w-full bg-white text-gray-700 rounded-lg py-3 px-10 outline-none focus:ring-2 focus:ring-orange-300 shadow-sm font-medium placeholder-gray-400">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="lock" class="text-gray-400 w-5 h-5"></i>
+                        </div>
+                        <input type="password" id="loginSenha" placeholder="Senha" 
+                            class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all shadow-sm font-medium">
                     </div>
-                    <button type="submit" class="w-full bg-white text-[#F27A23] font-bold py-3.5 rounded-lg shadow-lg hover:bg-gray-50 active:scale-95 transition-all uppercase tracking-wide text-sm mt-2">Entrar</button>
+
+                    <button type="submit" class="w-full bg-gradient-to-r from-[#F27A23] to-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all uppercase tracking-wide text-sm mt-2">
+                        Entrar
+                    </button>
                 </form>
-                <div class="flex justify-between items-center mt-6 text-sm">
-                    <button onclick="switchView('viewRecovery')" class="text-white underline hover:text-gray-200">Esqueci a senha</button>
-                    <button onclick="startRegistration()" class="text-white font-bold hover:text-gray-200 bg-white/20 px-3 py-1 rounded-full">Criar Conta</button>
+
+                <div class="flex justify-between items-center mt-8 text-sm font-medium">
+                    <button onclick="switchView('viewRecovery')" class="text-gray-500 hover:text-orange-600 transition-colors">Esqueci a senha</button>
+                    <button onclick="startRegistration()" class="text-orange-600 hover:text-orange-700 bg-orange-50 px-4 py-1.5 rounded-full border border-orange-100 hover:bg-orange-100 transition-all">Criar Conta</button>
                 </div>
             </div>
 
             <!-- VIEW 2: LOGGED IN -->
-            <div id="viewLoggedIn" class="hidden-view animate-fade-in flex flex-col items-center justify-center h-full text-center py-4">
+            <div id="viewLoggedIn" class="hidden-view animate-fade-in flex flex-col items-center justify-center p-8 h-full text-center">
                 <div class="relative mb-6">
-                    <div class="w-28 h-28 rounded-full border-4 border-white overflow-hidden shadow-lg bg-gray-200">
+                    <div class="w-24 h-24 rounded-full border-4 border-orange-100 overflow-hidden shadow-xl">
                         <img id="userAvatar" src="" alt="Foto Usuário" class="w-full h-full object-cover">
                     </div>
-                    <div class="absolute bottom-0 right-0 bg-green-500 w-6 h-6 rounded-full border-2 border-white"></div>
+                    <div class="absolute bottom-1 right-1 bg-green-500 w-5 h-5 rounded-full border-2 border-white animate-pulse"></div>
                 </div>
-                <h3 class="text-white text-xl font-medium mb-1">Olá, <span id="userName" class="font-bold">Usuário</span>!</h3>
-                <p class="text-white/80 text-sm mb-8">Bem-vindo de volta.</p>
-                <button onclick="handleQuickLogin()" class="w-full bg-white text-[#F27A23] font-bold py-3.5 rounded-lg shadow-lg hover:bg-gray-50 active:scale-95 transition-all mb-4">Continuar como <span id="btnUserName">Usuário</span></button>
-                <button onclick="logout()" class="text-white text-sm hover:underline opacity-80 hover:opacity-100">Trocar de conta</button>
+                
+                <h3 class="text-gray-800 text-xl font-bold mb-1">Olá, <span id="userName" class="text-[#F27A23]">Usuário</span>!</h3>
+                <p class="text-gray-500 text-sm mb-8">É bom te ver por aqui.</p>
+
+                <button onclick="handleQuickLogin()" class="w-full bg-[#F27A23] text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-orange-600 active:scale-[0.98] transition-all mb-3">
+                    Continuar Acesso
+                </button>
+                
+                <button onclick="logout()" class="text-gray-400 text-sm hover:text-gray-600 font-medium py-2">
+                    Entrar com outra conta
+                </button>
             </div>
 
-            <!-- VIEW 3: CHAT REGISTER -->
-            <div id="viewRegister" class="hidden-view flex flex-col h-[500px]">
-                <div class="flex items-center justify-between border-b border-white/20 pb-2 mb-2">
-                    <button onclick="cancelRegistration()" class="text-white hover:bg-white/20 p-1 rounded-full"><i data-lucide="arrow-left"></i></button>
-                    <span class="text-white font-bold text-sm">Cadastro Guardião</span>
-                    <div class="w-6"></div>
-                </div>
-                <div id="chatMessages" class="flex-1 overflow-y-auto chat-container flex flex-col p-2 space-y-3"></div>
-                <div class="mt-2 pt-2 border-t border-white/20 relative">
-                    <div id="inputAreaText" class="flex gap-2">
-                        <input type="text" id="chatInput" class="flex-1 rounded-full px-4 py-2 text-sm text-gray-700 focus:outline-none shadow-lg" placeholder="Digite aqui..." autocomplete="off">
-                        <button onclick="submitChat()" class="bg-white text-[#F27A23] p-2 rounded-full shadow-lg hover:bg-gray-100"><i data-lucide="send" class="w-5 h-5"></i></button>
+            <!-- VIEW 3: CHAT REGISTER (Atualizado) -->
+            <div id="viewRegister" class="hidden-view flex flex-col h-[550px] bg-gray-50">
+                <!-- Header Profissional -->
+                <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-100 shadow-sm z-10">
+                    <button onclick="cancelRegistration()" class="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                    <div class="flex flex-col items-center">
+                        <span class="text-gray-800 font-bold text-sm">Cadastro Guardião</span>
+                        <span class="text-[#F27A23] text-xs font-medium">Assistente Virtual</span>
                     </div>
-                    <div id="inputAreaOptions" class="hidden flex flex-wrap gap-2 justify-center"></div>
-                    <div id="inputAreaUpload" class="hidden flex justify-center">
-                         <label class="cursor-pointer bg-white text-[#F27A23] px-4 py-2 rounded-full font-bold shadow-lg flex items-center gap-2 hover:bg-gray-100">
-                            <i data-lucide="camera"></i> Tirar/Escolher Foto
+                    <div class="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-[#F27A23]">
+                        <i data-lucide="bot" class="w-5 h-5"></i>
+                    </div>
+                </div>
+
+                <!-- Área de Mensagens (Com padding extra para não cortar) -->
+                <div id="chatMessages" class="flex-1 overflow-y-auto chat-container flex flex-col p-4 space-y-2 bg-slate-50">
+                    <!-- Mensagens dinâmicas -->
+                </div>
+
+                <!-- Área de Input -->
+                <div class="bg-white p-3 border-t border-gray-100 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                    
+                    <!-- Input de Texto -->
+                    <div id="inputAreaText" class="flex gap-2 items-center">
+                        <input type="text" id="chatInput" class="flex-1 bg-gray-100 text-gray-800 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 focus:bg-white transition-all shadow-inner" placeholder="Digite sua resposta..." autocomplete="off">
+                        <button onclick="submitChat()" class="bg-[#F27A23] text-white p-3 rounded-full shadow-lg hover:bg-orange-600 active:scale-90 transition-all">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Botões de Opção -->
+                    <div id="inputAreaOptions" class="hidden flex flex-col gap-2 w-full">
+                        <!-- Botões injetados via JS -->
+                    </div>
+
+                    <!-- Botão Upload -->
+                    <div id="inputAreaUpload" class="hidden flex justify-center py-2">
+                         <label class="cursor-pointer bg-white text-[#F27A23] border-2 border-[#F27A23] px-6 py-3 rounded-full font-bold shadow-sm flex items-center gap-2 hover:bg-orange-50 w-full justify-center transition-all active:scale-95">
+                            <i data-lucide="camera" class="w-5 h-5"></i> Tirar ou Escolher Foto
                             <input type="file" id="photoUpload" accept="image/*" class="hidden" onchange="handlePhotoUpload(this)">
                         </label>
                     </div>
@@ -113,63 +195,65 @@
             </div>
 
             <!-- VIEW 4: RECOVERY -->
-            <div id="viewRecovery" class="hidden-view animate-fade-in flex flex-col justify-center h-full">
-                <button onclick="switchView('viewLogin')" class="absolute top-4 left-4 text-white"><i data-lucide="arrow-left"></i></button>
-                <h2 class="text-white text-2xl font-bold text-center mb-2">Recuperar Senha</h2>
-                <p class="text-white/80 text-center text-sm mb-6">Digite seu nome completo para localizarmos seu cadastro.</p>
+            <div id="viewRecovery" class="hidden-view animate-fade-in flex flex-col justify-center p-8 h-full bg-white">
+                <button onclick="switchView('viewLogin')" class="absolute top-6 left-6 text-gray-400 hover:text-gray-600"><i data-lucide="arrow-left"></i></button>
+                <div class="text-center mb-6 mt-4">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 text-[#F27A23]">
+                        <i data-lucide="key-round" class="w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-gray-800 text-2xl font-bold">Recuperar Senha</h2>
+                    <p class="text-gray-500 text-sm mt-2 px-4">Informe seu nome completo para buscarmos seu cadastro.</p>
+                </div>
+                
                 <form id="recoveryForm" class="space-y-4">
                     <div class="relative">
-                        <input type="text" id="recNome" placeholder="Nome Completo" class="w-full bg-white text-gray-700 rounded-lg py-3 px-4 outline-none focus:ring-2 focus:ring-orange-300 shadow-sm">
+                        <input type="text" id="recNome" placeholder="Nome Completo" 
+                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-orange-300 outline-none transition-all text-gray-800 font-medium">
                     </div>
-                    <button type="submit" class="w-full bg-white text-[#F27A23] font-bold py-3 rounded-lg shadow-lg mt-2">Enviar Código</button>
+                    <button type="submit" class="w-full bg-[#F27A23] text-white font-bold py-3.5 rounded-xl shadow-lg mt-2 hover:bg-orange-600 transition-all">Enviar Código</button>
                 </form>
             </div>
+
         </div>
     </div>
-    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-xl text-white font-semibold text-sm z-50 transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none"></div>
+
+    <!-- TOAST -->
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-2xl text-white font-semibold text-sm z-50 transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none flex items-center gap-2"></div>
 
     <script>
-        // --- LÓGICA DE API INTEGRADA ---
-        // Aqui implementamos a função de conexão usando a variável do arquivo apisistema.js
-        
+        // --- API HELPERS ---
         async function apiRequest(endpoint, method = 'GET', body = null) {
-            // Verifica se a variável do arquivo externo foi carregada
             const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:3005/api';
             const url = `${baseUrl}${endpoint}`;
-
             const headers = { 'Content-Type': 'application/json' };
             const token = localStorage.getItem('guardiao_token');
             if (token) headers['Authorization'] = `Bearer ${token}`;
-
             const options = { method, headers };
             if (body) options.body = JSON.stringify(body);
-
+            
             try {
-                // Tenta fetch real
                 const response = await fetch(url, options);
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.mensagem || `Erro ${response.status}`);
                 return data;
             } catch (error) {
-                // Se falhar (ex: API offline no preview), simula resposta para não travar a UI
-                console.warn("API Falhou, usando Mock local para demonstração:", error);
+                console.warn("API Error (Mocking response):", error);
                 return mockLocalResponse(endpoint, body);
             }
         }
 
-        // --- MOCK LOCAL (Para demonstração visual) ---
         function mockLocalResponse(endpoint, body) {
             return new Promise(resolve => {
                 setTimeout(() => {
                     if (endpoint === '/auth/login') {
-                        if (body.cpf_cnpj === '00000000000') resolve({ sucesso: false, mensagem: 'Inválido' });
-                        else resolve({ sucesso: true, dados: { token: 'mock123', usuario: { nome_completo: 'Usuário Demo', foto_perfil: 'https://via.placeholder.com/150' } } });
+                        if (body.cpf_cnpj === '00000000000') resolve({ sucesso: false, mensagem: 'Credenciais inválidas' });
+                        else resolve({ sucesso: true, dados: { token: 'mock123', usuario: { nome_completo: 'Usuário Teste', foto_perfil: 'https://via.placeholder.com/150' } } });
                     } else if (endpoint === '/auth/register') {
                         resolve({ sucesso: true, dados: { token: 'mockNew', usuario: { ...body } } });
                     } else {
-                        resolve({ sucesso: true, mensagem: 'Sucesso' });
+                        resolve({ sucesso: true, mensagem: 'Operação realizada' });
                     }
-                }, 1000);
+                }, 800);
             });
         }
 
@@ -188,17 +272,28 @@
         function switchView(viewId) {
             ['viewLogin', 'viewLoggedIn', 'viewRegister', 'viewRecovery'].forEach(id => document.getElementById(id).classList.add('hidden-view'));
             document.getElementById(viewId).classList.remove('hidden-view');
+            
+            // Ajustes de layout do container
             const card = document.getElementById('mainCard');
-            if (viewId === 'viewRegister') { card.style.height = '600px'; card.classList.replace('p-6', 'p-4'); }
-            else { card.style.height = 'auto'; card.style.minHeight = '400px'; card.classList.replace('p-4', 'p-6'); }
+            if (viewId === 'viewRegister') { 
+                card.style.height = '600px'; 
+                card.classList.remove('bg-white/95');
+                card.classList.add('bg-white'); // Remove translucidez para melhor leitura no chat
+            } else { 
+                card.style.height = 'auto'; 
+                card.classList.add('bg-white/95');
+            }
         }
 
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
-            toast.className = `fixed top-5 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg shadow-xl text-white font-semibold text-sm z-50 transition-all duration-300 ${type === 'success' ? 'bg-green-600' : 'bg-red-500'}`;
-            toast.innerText = msg;
+            const icon = type === 'success' ? '<i data-lucide="check-circle" class="w-5 h-5"></i>' : '<i data-lucide="alert-circle" class="w-5 h-5"></i>';
+            toast.className = `fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-2xl text-white font-semibold text-sm z-50 transition-all duration-300 flex items-center gap-2 ${type === 'success' ? 'bg-emerald-600' : 'bg-red-500'}`;
+            toast.innerHTML = `${icon} ${msg}`;
+            lucide.createIcons();
+            
             toast.classList.remove('opacity-0', 'translate-y-[-20px]');
-            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-[-20px]'), 3000);
+            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-[-20px]'), 3500);
         }
 
         function checkAuth() {
@@ -206,10 +301,9 @@
             const t = localStorage.getItem('guardiao_token');
             if (u && t) {
                 const user = JSON.parse(u);
-                document.getElementById('userAvatar').src = user.foto_perfil || 'https://via.placeholder.com/150';
+                document.getElementById('userAvatar').src = user.foto_perfil || 'https://ui-avatars.com/api/?name=' + user.nome_completo + '&background=F27A23&color=fff';
                 const name = user.nome_completo ? user.nome_completo.split(' ')[0] : 'Usuário';
                 document.getElementById('userName').innerText = name;
-                document.getElementById('btnUserName').innerText = name;
                 switchView('viewLoggedIn');
             } else { switchView('viewLogin'); }
         }
@@ -218,15 +312,24 @@
             e.preventDefault();
             const c = document.getElementById('loginCpf').value.replace(/\D/g, '');
             const s = document.getElementById('loginSenha').value;
-            if (!c || !s) return showToast('Preencha tudo', 'error');
-            showToast('Entrando...', 'success');
+            if (!c || !s) return showToast('Preencha todos os campos', 'error');
+            
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Autenticando...';
+            btn.disabled = true;
+
             const res = await apiRequest('/auth/login', 'POST', { cpf_cnpj: c, senha: s });
+            
+            btn.innerText = originalText;
+            btn.disabled = false;
+
             if (res.sucesso) {
                 localStorage.setItem('guardiao_token', res.dados.token);
                 localStorage.setItem('guardiao_user', JSON.stringify(res.dados.usuario));
-                showToast('Sucesso!', 'success');
-                setTimeout(() => window.location.href = 'facial.tokem.html', 1000);
-            } else { showToast(res.mensagem || 'Erro', 'error'); }
+                showToast('Acesso concedido!', 'success');
+                setTimeout(() => window.location.href = 'facial.tokem.html', 800);
+            } else { showToast(res.mensagem || 'Credenciais incorretas', 'error'); }
         }
 
         function handleQuickLogin() { window.location.href = 'facial.tokem.html'; }
@@ -235,73 +338,151 @@
         async function handleRecoverySubmit(e) {
             e.preventDefault();
             const n = document.getElementById('recNome').value;
-            if(!n) return;
+            if(!n) return showToast('Digite seu nome', 'error');
+            
             const res = await apiRequest('/auth/recuperar-senha', 'POST', { nome_completo: n });
-            if(res.sucesso) { showToast('Email enviado!', 'success'); setTimeout(() => switchView('viewLogin'), 2000); }
-            else showToast('Erro', 'error');
+            if(res.sucesso) { showToast('Código enviado para seu e-mail/SMS!', 'success'); setTimeout(() => switchView('viewLogin'), 3000); }
+            else showToast('Usuário não encontrado', 'error');
         }
 
-        // Chat Logic
+        // --- LÓGICA DO CHAT (Atualizada e Corrigida) ---
+        
+        // 4 Opções de Acesso conforme solicitado
         const chatFlow = [
-            { field: 'nome_completo', msg: 'Olá! Bem-vindo. Qual seu **Nome Completo**?', type: 'text' },
-            { field: 'tipo_acesso', msg: 'Qual seu perfil?', type: 'options', options: [{label: '👴 Idoso/Família', value:'usuario'}, {label: '🩺 Cuidador', value:'prestador'}] },
-            { field: 'cpf_cnpj', msg: 'Seu **CPF**?', type: 'text', mask: 'cpf' },
-            { field: 'email', msg: 'Seu **E-mail**?', type: 'text', validate: v=>v.includes('@') },
-            { field: 'celular', msg: 'Seu **Celular**?', type: 'text', mask: 'phone' },
-            { field: 'sexo', msg: 'Gênero?', type: 'options', options: [{label:'M', value:'Masculino'}, {label:'F', value:'Feminino'}] },
-            { field: 'cep', msg: 'Seu **CEP**?', type: 'text', mask: 'cep' },
-            { field: 'senha', msg: 'Crie uma **Senha**.', type: 'password' },
-            { field: 'foto_base64', msg: 'Sua **Foto de Perfil**.', type: 'upload' },
-            { field: 'termos', msg: 'Aceita os termos? <a href="pdf.termo.pdf" class="underline">Ler PDF</a>', type: 'options', options: [{label:'✅ Sim', value:'true'}] }
+            { field: 'nome_completo', msg: 'Olá! Sou o assistente do Guardião. Vamos configurar sua conta. 😊<br>Primeiro, como devo te chamar? (<b>Nome Completo</b>)', type: 'text' },
+            { 
+                field: 'tipo_acesso', 
+                msg: 'Prazer! Qual perfil de acesso você precisa? (Selecione uma das 4 opções)', 
+                type: 'options', 
+                options: [
+                    { label: '🧑‍🧑 Familiar / Responsável', value: 'familiar' },
+                    { label: '👴 Idoso / Assistido', value: 'idoso' },
+                    { label: '🩺 Cuidador Profissional', value: 'cuidador' },
+                    { label: '🏥 Profissional de Saúde', value: 'saude' }
+                ] 
+            },
+            { field: 'cpf_cnpj', msg: 'Entendido. Agora, digite seu <b>CPF</b> (somente números).', type: 'text', mask: 'cpf' },
+            { field: 'email', msg: 'Qual seu melhor <b>E-mail</b> para contato?', type: 'text', validate: v=>v.includes('@') && v.includes('.') },
+            { field: 'celular', msg: 'E seu número de <b>Celular</b> (WhatsApp)?', type: 'text', mask: 'phone' },
+            { field: 'sexo', msg: 'Como você se identifica?', type: 'options', options: [{label:'Masculino', value:'Masculino'}, {label:'Feminino', value:'Feminino'}, {label:'Outro', value:'Outro'}] },
+            { field: 'cep', msg: 'Informe seu <b>CEP</b> para localizarmos cuidadores próximos.', type: 'text', mask: 'cep' },
+            { field: 'senha', msg: 'Quase lá! Crie uma <b>Senha</b> segura (mínimo 6 dígitos).', type: 'password' },
+            { field: 'foto_base64', msg: 'Para finalizar, adicione uma <b>Foto de Perfil</b> bonita! 📸', type: 'upload' },
+            { field: 'termos', msg: 'Você aceita os <a href="pdf.termo.pdf" class="text-orange-600 font-bold underline">Termos de Uso</a> e Política de Privacidade?', type: 'options', options: [{label:'✅ Li e Concordo com Tudo', value:'true'}] }
         ];
 
         function startRegistration() { registerState = {step:0, data:{}}; document.getElementById('chatMessages').innerHTML=''; switchView('viewRegister'); addBotMsg(chatFlow[0].msg); setupInput(chatFlow[0]); }
         function cancelRegistration() { switchView('viewLogin'); }
-        function addBotMsg(t) { const d=document.createElement('div'); d.className='chat-bubble chat-bot'; d.innerHTML=t.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>'); document.getElementById('chatMessages').appendChild(d); scrollChat(); }
-        function addUserMsg(t) { const d=document.createElement('div'); d.className='chat-bubble chat-user'; d.innerHTML=t; document.getElementById('chatMessages').appendChild(d); scrollChat(); }
-        function scrollChat() { const c=document.getElementById('chatMessages'); c.scrollTop=c.scrollHeight; }
+        
+        function addBotMsg(t) { 
+            const d=document.createElement('div'); 
+            d.className='chat-bubble chat-bot'; 
+            d.innerHTML=t; 
+            document.getElementById('chatMessages').appendChild(d); 
+            scrollChat(); 
+        }
+        
+        function addUserMsg(t) { 
+            const d=document.createElement('div'); 
+            d.className='chat-bubble chat-user'; 
+            d.innerHTML=t; 
+            document.getElementById('chatMessages').appendChild(d); 
+            scrollChat(); 
+        }
+        
+        function scrollChat() { 
+            const c=document.getElementById('chatMessages'); 
+            // Pequeno delay para garantir que o DOM renderizou
+            setTimeout(() => { c.scrollTop = c.scrollHeight; }, 50);
+        }
 
         function setupInput(cfg) {
-            const txt=document.getElementById('inputAreaText'), opt=document.getElementById('inputAreaOptions'), upl=document.getElementById('inputAreaUpload'), inp=document.getElementById('chatInput');
-            txt.classList.add('hidden'); opt.classList.add('hidden'); upl.classList.add('hidden'); opt.innerHTML=''; inp.value=''; inp.type=cfg.type==='password'?'password':'text';
-            
+            const txt=document.getElementById('inputAreaText');
+            const opt=document.getElementById('inputAreaOptions');
+            const upl=document.getElementById('inputAreaUpload');
+            const inp=document.getElementById('chatInput');
+
+            // Reset visual
+            txt.classList.add('hidden'); 
+            opt.classList.add('hidden'); 
+            upl.classList.add('hidden'); 
+            opt.innerHTML=''; 
+            inp.value=''; 
+            inp.type = cfg.type === 'password' ? 'password' : 'text';
+
+            // BUGFIX CRÍTICO: Limpar event listeners anteriores (máscaras)
+            // Se não limpar, a máscara de CPF impede digitar letras no Email
+            inp.oninput = null; 
+
             if(cfg.type==='text'||cfg.type==='password') {
-                txt.classList.remove('hidden'); inp.focus();
-                if(cfg.mask==='cpf') setupCpfMask(inp); if(cfg.mask==='phone') setupPhoneMask(inp); if(cfg.mask==='cep') setupCepMask(inp);
+                txt.classList.remove('hidden'); 
+                inp.focus();
+                // Aplica máscaras apenas se necessário
+                if(cfg.mask==='cpf') setupCpfMask(inp); 
+                if(cfg.mask==='phone') setupPhoneMask(inp); 
+                if(cfg.mask==='cep') setupCepMask(inp);
             } else if(cfg.type==='options') {
                 opt.classList.remove('hidden');
-                cfg.options.forEach(o => { const b=document.createElement('button'); b.className='bg-white text-orange-500 border border-orange-500 px-4 py-2 rounded-full text-sm mr-2 mb-1'; b.innerText=o.label; b.onclick=()=>processStep(o.value, o.label); opt.appendChild(b); });
-            } else if(cfg.type==='upload') { upl.classList.remove('hidden'); }
+                cfg.options.forEach(o => { 
+                    const b=document.createElement('button'); 
+                    b.className='w-full bg-white border border-gray-200 text-gray-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 font-semibold py-3 px-4 rounded-xl text-left shadow-sm transition-all active:scale-[0.99] flex items-center justify-between group';
+                    b.innerHTML = `<span>${o.label}</span> <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 group-hover:text-orange-400"></i>`;
+                    b.onclick=()=>processStep(o.value, o.label); 
+                    opt.appendChild(b); 
+                });
+                lucide.createIcons();
+            } else if(cfg.type==='upload') { 
+                upl.classList.remove('hidden'); 
+            }
         }
 
         function submitChat() { const v=document.getElementById('chatInput').value.trim(); if(v) processStep(v,v); }
-        function handlePhotoUpload(i) { if(i.files[0]) { const r=new FileReader(); r.onload=e=>{ addUserMsg(`<img src="${e.target.result}" class="w-20 h-20 rounded-full">`); processStep(e.target.result,'Foto',true); }; r.readAsDataURL(i.files[0]); } }
+        function handlePhotoUpload(i) { if(i.files[0]) { const r=new FileReader(); r.onload=e=>{ addUserMsg(`<img src="${e.target.result}" class="w-24 h-24 rounded-full border-4 border-white shadow-md">`); processStep(e.target.result,'Foto definida',true); }; r.readAsDataURL(i.files[0]); } }
 
         async function processStep(val, display, skip=false) {
             const cfg = chatFlow[registerState.step];
-            if(cfg.validate && !cfg.validate(val)) return addBotMsg('Inválido.');
-            if(cfg.field==='cpf_cnpj' && val.replace(/\D/g,'').length<11) return addBotMsg('CPF inválido.');
+            
+            // Validações
+            if(cfg.validate && !cfg.validate(val)) return addBotMsg('<span class="text-red-500 font-bold">⚠️ Formato inválido.</span><br>Por favor, verifique e tente novamente.');
+            if(cfg.field==='cpf_cnpj' && val.replace(/\D/g,'').length<11) return addBotMsg('⚠️ CPF precisa ter 11 dígitos.');
             
             if(!skip) addUserMsg(display);
             registerState.data[cfg.field] = val;
             registerState.step++;
 
-            if(registerState.step < chatFlow.length) { setTimeout(()=> { addBotMsg(chatFlow[registerState.step].msg); setupInput(chatFlow[registerState.step]); }, 500); }
-            else { addBotMsg('Criando conta...'); finishReg(); }
+            if(registerState.step < chatFlow.length) { 
+                setTimeout(()=> { 
+                    addBotMsg(chatFlow[registerState.step].msg); 
+                    setupInput(chatFlow[registerState.step]); 
+                }, 600); 
+            } else { 
+                addBotMsg('Perfeito! Criando sua conta...'); 
+                finishReg(); 
+            }
         }
 
         async function finishReg() {
             const d = {...registerState.data, rua:'-', cidade:'-', estado:'UF', bairro:'-', latitude:0, longitude:0};
             d.cpf_cnpj=d.cpf_cnpj.replace(/\D/g,''); d.celular=d.celular.replace(/\D/g,'');
+            
             const res = await apiRequest('/auth/register', 'POST', d);
+            
             if(res.sucesso) { 
-                addBotMsg('Sucesso! Redirecionando...'); 
+                addBotMsg('<b>🎉 Sucesso!</b><br>Conta criada. Entrando...'); 
                 localStorage.setItem('guardiao_token', res.dados.token);
                 localStorage.setItem('guardiao_user', JSON.stringify(res.dados.usuario));
-                setTimeout(()=>window.location.href='facial.tokem.html', 2000);
-            } else { addBotMsg('Erro: '+res.mensagem); setTimeout(cancelRegistration, 3000); }
+                setTimeout(()=>window.location.href='facial.tokem.html', 2500);
+            } else { 
+                addBotMsg('❌ <b>Erro:</b> '+res.mensagem); 
+                setTimeout(() => {
+                    addBotMsg('Reiniciando cadastro...');
+                    setTimeout(startRegistration, 2000);
+                }, 3000);
+            }
         }
 
+        // --- MÁSCARAS ---
+        function setupMasks() { const i=document.getElementById('loginCpf'); setupCpfMask(i); }
         function setupCpfMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); if(v.length>11) v=v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,"$1.$2.$3/$4-$5"); else v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.$2.$3-$4"); e.target.value=v; } }
         function setupPhoneMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); v=v.replace(/^(\d{2})(\d{5})(\d{4})/,"($1) $2-$3"); e.target.value=v; } }
         function setupCepMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); v=v.replace(/^(\d{5})(\d{3})/,"$1-$2"); e.target.value=v; } }
