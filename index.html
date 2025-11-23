@@ -163,7 +163,7 @@
                     </div>
                 </div>
 
-                <!-- Área de Mensagens (Com padding extra para não cortar) -->
+                <!-- Área de Mensagens -->
                 <div id="chatMessages" class="flex-1 overflow-y-auto chat-container flex flex-col p-4 space-y-2 bg-slate-50">
                     <!-- Mensagens dinâmicas -->
                 </div>
@@ -273,12 +273,11 @@
             ['viewLogin', 'viewLoggedIn', 'viewRegister', 'viewRecovery'].forEach(id => document.getElementById(id).classList.add('hidden-view'));
             document.getElementById(viewId).classList.remove('hidden-view');
             
-            // Ajustes de layout do container
             const card = document.getElementById('mainCard');
             if (viewId === 'viewRegister') { 
                 card.style.height = '600px'; 
                 card.classList.remove('bg-white/95');
-                card.classList.add('bg-white'); // Remove translucidez para melhor leitura no chat
+                card.classList.add('bg-white'); 
             } else { 
                 card.style.height = 'auto'; 
                 card.classList.add('bg-white/95');
@@ -345,9 +344,7 @@
             else showToast('Usuário não encontrado', 'error');
         }
 
-        // --- LÓGICA DO CHAT (Atualizada e Corrigida) ---
-        
-        // 4 Opções de Acesso conforme solicitado
+        // --- LÓGICA DO CHAT ---
         const chatFlow = [
             { field: 'nome_completo', msg: 'Olá! Sou o assistente do Guardião. Vamos configurar sua conta. 😊<br>Primeiro, como devo te chamar? (<b>Nome Completo</b>)', type: 'text' },
             { 
@@ -392,7 +389,6 @@
         
         function scrollChat() { 
             const c=document.getElementById('chatMessages'); 
-            // Pequeno delay para garantir que o DOM renderizou
             setTimeout(() => { c.scrollTop = c.scrollHeight; }, 50);
         }
 
@@ -402,22 +398,17 @@
             const upl=document.getElementById('inputAreaUpload');
             const inp=document.getElementById('chatInput');
 
-            // Reset visual
             txt.classList.add('hidden'); 
             opt.classList.add('hidden'); 
             upl.classList.add('hidden'); 
             opt.innerHTML=''; 
             inp.value=''; 
             inp.type = cfg.type === 'password' ? 'password' : 'text';
-
-            // BUGFIX CRÍTICO: Limpar event listeners anteriores (máscaras)
-            // Se não limpar, a máscara de CPF impede digitar letras no Email
             inp.oninput = null; 
 
             if(cfg.type==='text'||cfg.type==='password') {
                 txt.classList.remove('hidden'); 
                 inp.focus();
-                // Aplica máscaras apenas se necessário
                 if(cfg.mask==='cpf') setupCpfMask(inp); 
                 if(cfg.mask==='phone') setupPhoneMask(inp); 
                 if(cfg.mask==='cep') setupCepMask(inp);
@@ -442,11 +433,53 @@
         async function processStep(val, display, skip=false) {
             const cfg = chatFlow[registerState.step];
             
-            // Validações
+            // Validações Básicas
             if(cfg.validate && !cfg.validate(val)) return addBotMsg('<span class="text-red-500 font-bold">⚠️ Formato inválido.</span><br>Por favor, verifique e tente novamente.');
             if(cfg.field==='cpf_cnpj' && val.replace(/\D/g,'').length<11) return addBotMsg('⚠️ CPF precisa ter 11 dígitos.');
             
-            if(!skip) addUserMsg(display);
+            // --- INTEGRAÇÃO VIACEP ---
+            // Verifica se é o campo de CEP para buscar endereço
+            if(cfg.field === 'cep') {
+                const cleanCep = val.replace(/\D/g, '');
+                
+                if(cleanCep.length !== 8) {
+                    return addBotMsg('⚠️ CEP deve ter 8 dígitos numéricos.');
+                }
+
+                // Mostra input do usuário antes de buscar
+                if(!skip) addUserMsg(display);
+                
+                // Feedback de busca
+                addBotMsg('🔍 <i>Buscando endereço...</i>');
+
+                try {
+                    const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+                    const addressData = await response.json();
+
+                    if(addressData.erro) {
+                        addBotMsg('⚠️ CEP não encontrado. Por favor, verifique e tente novamente.');
+                        return; // Impede avanço se CEP for inválido na API
+                    }
+
+                    // Salva dados do endereço no estado global
+                    registerState.data.rua = addressData.logradouro || '';
+                    registerState.data.bairro = addressData.bairro || '';
+                    registerState.data.cidade = addressData.localidade || '';
+                    registerState.data.estado = addressData.uf || '';
+
+                    // Bot confirma endereço encontrado
+                    addBotMsg(`✅ <b>Endereço localizado:</b><br>${addressData.logradouro}, ${addressData.bairro}<br>${addressData.localidade} - ${addressData.uf}`);
+
+                } catch (error) {
+                    console.error("Erro ViaCEP:", error);
+                    addBotMsg('⚠️ Erro ao consultar CEP. Vamos seguir apenas com o número.');
+                }
+            } else {
+                // Comportamento padrão para outros campos
+                if(!skip) addUserMsg(display);
+            }
+
+            // Salva o valor do campo atual
             registerState.data[cfg.field] = val;
             registerState.step++;
 
@@ -462,8 +495,20 @@
         }
 
         async function finishReg() {
-            const d = {...registerState.data, rua:'-', cidade:'-', estado:'UF', bairro:'-', latitude:0, longitude:0};
-            d.cpf_cnpj=d.cpf_cnpj.replace(/\D/g,''); d.celular=d.celular.replace(/\D/g,'');
+            // Prepara payload final mesclando dados capturados (incluindo endereço do ViaCEP)
+            const d = {
+                rua: 'N/A', 
+                cidade: 'N/A', 
+                estado: 'UF', 
+                bairro: 'N/A', 
+                latitude: 0, 
+                longitude: 0,
+                ...registerState.data // Dados do chat e ViaCEP sobrescrevem os defaults
+            };
+            
+            // Limpeza final de dados
+            d.cpf_cnpj = d.cpf_cnpj.replace(/\D/g,''); 
+            d.celular = d.celular.replace(/\D/g,'');
             
             const res = await apiRequest('/auth/register', 'POST', d);
             
