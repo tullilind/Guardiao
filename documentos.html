@@ -169,15 +169,16 @@
         });
 
         function checkUserTypeAndRoute() {
-            const tipo = currentUser.tipo_acesso || 'usuario'; 
+            const tipo = currentUser.tipo_acesso ? currentUser.tipo_acesso.toLowerCase() : ''; 
+            const isPrestador = ['cuidador', 'prestador', 'saude', 'baba', 'enfermeiro'].some(role => tipo.includes(role));
 
-            // ROTEAMENTO AUTOMÁTICO
-            if (tipo === 'usuario' || tipo === 'familiar' || tipo === 'idoso') {
-                // Cliente não precisa de docs -> Vai para Home do Cliente
-                window.location.href = 'Sistemafamiliaidoso/boas.vindas.html'; 
-            } else {
-                // Prestador precisa de docs -> Carrega lista
+            // LÓGICA CORRIGIDA: Prioriza quem É prestador
+            if (isPrestador) {
+                console.log("Usuário Prestador: Verificando documentos...");
                 loadDocuments();
+            } else {
+                console.log("Usuário Cliente: Redirecionando...");
+                window.location.href = 'Sistemafamiliaidoso/boas.vindas.html'; 
             }
         }
 
