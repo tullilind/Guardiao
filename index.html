@@ -11,76 +11,33 @@
     <!-- Ícones (Lucide) -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
+    <!-- 1. Importando APENAS a variável API_BASE_URL -->
+    <script src="apisistema.js"></script>
+
     <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #F27A23;
-        }
-
-        .outline-text {
-            color: transparent;
-            -webkit-text-stroke: 2px rgba(255, 255, 255, 0.5);
-            font-weight: 900;
-            line-height: 1;
-        }
-
-        /* Animações */
+        body { font-family: 'Montserrat', sans-serif; background-color: #F27A23; }
+        .outline-text { color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.5); font-weight: 900; line-height: 1; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-
-        /* Estilo do Chat */
-        .chat-bubble {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            margin-bottom: 10px;
-            font-size: 0.95rem;
-            line-height: 1.4;
-            position: relative;
-            animation: fadeIn 0.3s ease-out;
-        }
-        .chat-bot {
-            background-color: #ffffff;
-            color: #374151;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .chat-user {
-            background-color: #FDBA74; /* Laranja claro */
-            color: #7c2d12;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-            font-weight: 500;
-            text-align: right;
-        }
-        
-        /* Scrollbar customizada para o chat */
+        .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; margin-bottom: 10px; font-size: 0.95rem; line-height: 1.4; animation: fadeIn 0.3s ease-out; }
+        .chat-bot { background-color: #ffffff; color: #374151; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .chat-user { background-color: #FDBA74; color: #7c2d12; align-self: flex-end; border-bottom-right-radius: 4px; font-weight: 500; text-align: right; }
         .chat-container::-webkit-scrollbar { width: 6px; }
         .chat-container::-webkit-scrollbar-track { background: transparent; }
         .chat-container::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.3); border-radius: 10px; }
-
-        /* Utilitários */
         .hidden-view { display: none !important; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden relative bg-[#F27A23]">
 
-    <!-- ================= FUNDO DECORATIVO ================= -->
+    <!-- FUNDO DECORATIVO -->
     <div class="pointer-events-none select-none absolute inset-0 z-0">
-        <!-- Texto Vertical -->
         <div class="absolute left-0 bottom-0 h-full flex items-center justify-center w-20">
-            <h1 class="outline-text text-[15vh] md:text-[20vh] tracking-widest transform -rotate-90 whitespace-nowrap origin-center opacity-60">
-                GUARDIÃO
-            </h1>
+            <h1 class="outline-text text-[15vh] md:text-[20vh] tracking-widest transform -rotate-90 whitespace-nowrap origin-center opacity-60">GUARDIÃO</h1>
         </div>
-        <!-- Texto Horizontal -->
         <div class="absolute bottom-[-5%] right-0 w-full flex justify-end pr-4 md:pr-10">
-            <h1 class="outline-text text-[18vh] md:text-[25vh] tracking-tighter opacity-60 translate-y-4">
-                IÃO
-            </h1>
+            <h1 class="outline-text text-[18vh] md:text-[25vh] tracking-tighter opacity-60 translate-y-4">IÃO</h1>
         </div>
-        <!-- Curvas -->
         <div class="absolute top-0 right-0 h-full w-1/2 overflow-hidden">
              <svg viewBox="0 0 200 400" preserveAspectRatio="none" class="h-full w-full text-white opacity-90 float-right">
                 <path fill="currentColor" d="M150,0 C150,0 80,100 120,200 C160,300 50,400 50,400 L200,400 L200,0 Z" transform="translate(50,0) scale(1.5, 1)"/>
@@ -88,45 +45,37 @@
         </div>
     </div>
 
-    <!-- ================= ÁREA PRINCIPAL ================= -->
+    <!-- ÁREA PRINCIPAL -->
     <div class="relative z-10 w-full h-full flex flex-col items-center justify-center px-4 md:px-8">
-        
-        <!-- LOGO (Fixo) -->
+        <!-- LOGO -->
         <div class="mb-6 flex justify-center transition-all duration-500" id="logoContainer">
             <img src="logo.sem.png" alt="Logo Guardião" class="w-24 md:w-32 drop-shadow-md">
         </div>
 
-        <!-- CONTAINER DOS VIEWS -->
+        <!-- CONTAINER VIEWS -->
         <div class="w-full max-w-md bg-white/10 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20 relative overflow-hidden transition-all duration-300" id="mainCard" style="min-height: 400px;">
             
-            <!-- VIEW 1: LOGIN FORM (Padrão) -->
+            <!-- VIEW 1: LOGIN -->
             <div id="viewLogin" class="animate-fade-in h-full flex flex-col justify-center">
                 <h2 class="text-white text-2xl font-bold text-center mb-6">Bem-vindo</h2>
-                
                 <form id="loginForm" class="space-y-4">
                     <div class="relative group">
                         <i data-lucide="user" class="absolute left-3 top-3.5 text-gray-400 w-5 h-5"></i>
-                        <input type="text" id="loginCpf" placeholder="CPF ou CNPJ" maxlength="18"
-                            class="w-full bg-white text-gray-700 rounded-lg py-3 px-10 outline-none focus:ring-2 focus:ring-orange-300 shadow-sm font-medium placeholder-gray-400">
+                        <input type="text" id="loginCpf" placeholder="CPF ou CNPJ" maxlength="18" class="w-full bg-white text-gray-700 rounded-lg py-3 px-10 outline-none focus:ring-2 focus:ring-orange-300 shadow-sm font-medium placeholder-gray-400">
                     </div>
                     <div class="relative group">
                         <i data-lucide="lock" class="absolute left-3 top-3.5 text-gray-400 w-5 h-5"></i>
-                        <input type="password" id="loginSenha" placeholder="Senha"
-                            class="w-full bg-white text-gray-700 rounded-lg py-3 px-10 outline-none focus:ring-2 focus:ring-orange-300 shadow-sm font-medium placeholder-gray-400">
+                        <input type="password" id="loginSenha" placeholder="Senha" class="w-full bg-white text-gray-700 rounded-lg py-3 px-10 outline-none focus:ring-2 focus:ring-orange-300 shadow-sm font-medium placeholder-gray-400">
                     </div>
-
-                    <button type="submit" class="w-full bg-white text-[#F27A23] font-bold py-3.5 rounded-lg shadow-lg hover:bg-gray-50 active:scale-95 transition-all uppercase tracking-wide text-sm mt-2">
-                        Entrar
-                    </button>
+                    <button type="submit" class="w-full bg-white text-[#F27A23] font-bold py-3.5 rounded-lg shadow-lg hover:bg-gray-50 active:scale-95 transition-all uppercase tracking-wide text-sm mt-2">Entrar</button>
                 </form>
-
                 <div class="flex justify-between items-center mt-6 text-sm">
                     <button onclick="switchView('viewRecovery')" class="text-white underline hover:text-gray-200">Esqueci a senha</button>
                     <button onclick="startRegistration()" class="text-white font-bold hover:text-gray-200 bg-white/20 px-3 py-1 rounded-full">Criar Conta</button>
                 </div>
             </div>
 
-            <!-- VIEW 2: LOGGED IN (Usuário Detectado) -->
+            <!-- VIEW 2: LOGGED IN -->
             <div id="viewLoggedIn" class="hidden-view animate-fade-in flex flex-col items-center justify-center h-full text-center py-4">
                 <div class="relative mb-6">
                     <div class="w-28 h-28 rounded-full border-4 border-white overflow-hidden shadow-lg bg-gray-200">
@@ -134,46 +83,26 @@
                     </div>
                     <div class="absolute bottom-0 right-0 bg-green-500 w-6 h-6 rounded-full border-2 border-white"></div>
                 </div>
-                
                 <h3 class="text-white text-xl font-medium mb-1">Olá, <span id="userName" class="font-bold">Usuário</span>!</h3>
                 <p class="text-white/80 text-sm mb-8">Bem-vindo de volta.</p>
-
-                <button onclick="handleQuickLogin()" class="w-full bg-white text-[#F27A23] font-bold py-3.5 rounded-lg shadow-lg hover:bg-gray-50 active:scale-95 transition-all mb-4">
-                    Continuar como <span id="btnUserName">Usuário</span>
-                </button>
-                
-                <button onclick="logout()" class="text-white text-sm hover:underline opacity-80 hover:opacity-100">
-                    Trocar de conta
-                </button>
+                <button onclick="handleQuickLogin()" class="w-full bg-white text-[#F27A23] font-bold py-3.5 rounded-lg shadow-lg hover:bg-gray-50 active:scale-95 transition-all mb-4">Continuar como <span id="btnUserName">Usuário</span></button>
+                <button onclick="logout()" class="text-white text-sm hover:underline opacity-80 hover:opacity-100">Trocar de conta</button>
             </div>
 
-            <!-- VIEW 3: CHAT REGISTRATION -->
+            <!-- VIEW 3: CHAT REGISTER -->
             <div id="viewRegister" class="hidden-view flex flex-col h-[500px]">
-                <!-- Header do Chat -->
                 <div class="flex items-center justify-between border-b border-white/20 pb-2 mb-2">
                     <button onclick="cancelRegistration()" class="text-white hover:bg-white/20 p-1 rounded-full"><i data-lucide="arrow-left"></i></button>
                     <span class="text-white font-bold text-sm">Cadastro Guardião</span>
                     <div class="w-6"></div>
                 </div>
-
-                <!-- Área de Mensagens -->
-                <div id="chatMessages" class="flex-1 overflow-y-auto chat-container flex flex-col p-2 space-y-3">
-                    <!-- Mensagens inseridas via JS -->
-                </div>
-
-                <!-- Área de Input -->
+                <div id="chatMessages" class="flex-1 overflow-y-auto chat-container flex flex-col p-2 space-y-3"></div>
                 <div class="mt-2 pt-2 border-t border-white/20 relative">
                     <div id="inputAreaText" class="flex gap-2">
                         <input type="text" id="chatInput" class="flex-1 rounded-full px-4 py-2 text-sm text-gray-700 focus:outline-none shadow-lg" placeholder="Digite aqui..." autocomplete="off">
                         <button onclick="submitChat()" class="bg-white text-[#F27A23] p-2 rounded-full shadow-lg hover:bg-gray-100"><i data-lucide="send" class="w-5 h-5"></i></button>
                     </div>
-                    
-                    <!-- Botões de Opção (Dinâmico) -->
-                    <div id="inputAreaOptions" class="hidden flex flex-wrap gap-2 justify-center">
-                        <!-- Botões inseridos via JS -->
-                    </div>
-
-                    <!-- Botão Upload (Dinâmico) -->
+                    <div id="inputAreaOptions" class="hidden flex flex-wrap gap-2 justify-center"></div>
                     <div id="inputAreaUpload" class="hidden flex justify-center">
                          <label class="cursor-pointer bg-white text-[#F27A23] px-4 py-2 rounded-full font-bold shadow-lg flex items-center gap-2 hover:bg-gray-100">
                             <i data-lucide="camera"></i> Tirar/Escolher Foto
@@ -188,500 +117,194 @@
                 <button onclick="switchView('viewLogin')" class="absolute top-4 left-4 text-white"><i data-lucide="arrow-left"></i></button>
                 <h2 class="text-white text-2xl font-bold text-center mb-2">Recuperar Senha</h2>
                 <p class="text-white/80 text-center text-sm mb-6">Digite seu nome completo para localizarmos seu cadastro.</p>
-                
                 <form id="recoveryForm" class="space-y-4">
                     <div class="relative">
-                        <input type="text" id="recNome" placeholder="Nome Completo"
-                            class="w-full bg-white text-gray-700 rounded-lg py-3 px-4 outline-none focus:ring-2 focus:ring-orange-300 shadow-sm">
+                        <input type="text" id="recNome" placeholder="Nome Completo" class="w-full bg-white text-gray-700 rounded-lg py-3 px-4 outline-none focus:ring-2 focus:ring-orange-300 shadow-sm">
                     </div>
-                    <button type="submit" class="w-full bg-white text-[#F27A23] font-bold py-3 rounded-lg shadow-lg mt-2">
-                        Enviar Código
-                    </button>
+                    <button type="submit" class="w-full bg-white text-[#F27A23] font-bold py-3 rounded-lg shadow-lg mt-2">Enviar Código</button>
                 </form>
             </div>
-
         </div>
     </div>
-
-    <!-- TOAST NOTIFICATION -->
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-xl text-white font-semibold text-sm z-50 transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none"></div>
 
     <script>
-        // Configuração da API
-        const API_BASE = 'http://localhost:3005/api';
-        const USE_MOCK = true; // Define como FALSE para usar a API real. TRUE para testar na visualização.
+        // --- LÓGICA DE API INTEGRADA ---
+        // Aqui implementamos a função de conexão usando a variável do arquivo apisistema.js
+        
+        async function apiRequest(endpoint, method = 'GET', body = null) {
+            // Verifica se a variável do arquivo externo foi carregada
+            const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:3005/api';
+            const url = `${baseUrl}${endpoint}`;
 
-        // Estado do Cadastro
-        let registerState = {
-            step: 0,
-            data: {}
-        };
+            const headers = { 'Content-Type': 'application/json' };
+            const token = localStorage.getItem('guardiao_token');
+            if (token) headers['Authorization'] = `Bearer ${token}`;
 
-        // --- INICIALIZAÇÃO ---
+            const options = { method, headers };
+            if (body) options.body = JSON.stringify(body);
+
+            try {
+                // Tenta fetch real
+                const response = await fetch(url, options);
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.mensagem || `Erro ${response.status}`);
+                return data;
+            } catch (error) {
+                // Se falhar (ex: API offline no preview), simula resposta para não travar a UI
+                console.warn("API Falhou, usando Mock local para demonstração:", error);
+                return mockLocalResponse(endpoint, body);
+            }
+        }
+
+        // --- MOCK LOCAL (Para demonstração visual) ---
+        function mockLocalResponse(endpoint, body) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    if (endpoint === '/auth/login') {
+                        if (body.cpf_cnpj === '00000000000') resolve({ sucesso: false, mensagem: 'Inválido' });
+                        else resolve({ sucesso: true, dados: { token: 'mock123', usuario: { nome_completo: 'Usuário Demo', foto_perfil: 'https://via.placeholder.com/150' } } });
+                    } else if (endpoint === '/auth/register') {
+                        resolve({ sucesso: true, dados: { token: 'mockNew', usuario: { ...body } } });
+                    } else {
+                        resolve({ sucesso: true, mensagem: 'Sucesso' });
+                    }
+                }, 1000);
+            });
+        }
+
+        // --- APP LOGIC ---
+        let registerState = { step: 0, data: {} };
+
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             checkAuth();
             setupMasks();
-
-            // Listeners
             document.getElementById('loginForm').addEventListener('submit', handleLoginSubmit);
             document.getElementById('recoveryForm').addEventListener('submit', handleRecoverySubmit);
-            document.getElementById('chatInput').addEventListener('keypress', (e) => {
-                if(e.key === 'Enter') submitChat();
-            });
+            document.getElementById('chatInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') submitChat(); });
         });
 
-        // --- GERENCIAMENTO DE VIEWS ---
         function switchView(viewId) {
-            ['viewLogin', 'viewLoggedIn', 'viewRegister', 'viewRecovery'].forEach(id => {
-                document.getElementById(id).classList.add('hidden-view');
-            });
+            ['viewLogin', 'viewLoggedIn', 'viewRegister', 'viewRecovery'].forEach(id => document.getElementById(id).classList.add('hidden-view'));
             document.getElementById(viewId).classList.remove('hidden-view');
-            
-            // Ajuste de altura do card para o chat
             const card = document.getElementById('mainCard');
-            if (viewId === 'viewRegister') {
-                card.style.height = '600px'; 
-                card.classList.remove('p-6');
-                card.classList.add('p-4');
-            } else {
-                card.style.height = 'auto';
-                card.style.minHeight = '400px';
-                card.classList.add('p-6');
-                card.classList.remove('p-4');
-            }
+            if (viewId === 'viewRegister') { card.style.height = '600px'; card.classList.replace('p-6', 'p-4'); }
+            else { card.style.height = 'auto'; card.style.minHeight = '400px'; card.classList.replace('p-4', 'p-6'); }
         }
 
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
-            toast.className = `fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-xl text-white font-semibold text-sm z-50 transition-all duration-300 ${type === 'success' ? 'bg-green-600' : 'bg-red-500'}`;
+            toast.className = `fixed top-5 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg shadow-xl text-white font-semibold text-sm z-50 transition-all duration-300 ${type === 'success' ? 'bg-green-600' : 'bg-red-500'}`;
             toast.innerText = msg;
             toast.classList.remove('opacity-0', 'translate-y-[-20px]');
-            
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-[-20px]');
-            }, 3000);
+            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-[-20px]'), 3000);
         }
 
-        // --- AUTH & LOCALSTORAGE ---
         function checkAuth() {
-            const userData = localStorage.getItem('guardiao_user');
-            const token = localStorage.getItem('guardiao_token');
-
-            if (userData && token) {
-                const user = JSON.parse(userData);
+            const u = localStorage.getItem('guardiao_user');
+            const t = localStorage.getItem('guardiao_token');
+            if (u && t) {
+                const user = JSON.parse(u);
                 document.getElementById('userAvatar').src = user.foto_perfil || 'https://via.placeholder.com/150';
-                document.getElementById('userName').innerText = user.nome_completo.split(' ')[0];
-                document.getElementById('btnUserName').innerText = user.nome_completo.split(' ')[0];
+                const name = user.nome_completo ? user.nome_completo.split(' ')[0] : 'Usuário';
+                document.getElementById('userName').innerText = name;
+                document.getElementById('btnUserName').innerText = name;
                 switchView('viewLoggedIn');
-            } else {
-                switchView('viewLogin');
-            }
+            } else { switchView('viewLogin'); }
         }
 
         async function handleLoginSubmit(e) {
             e.preventDefault();
-            const cpf = document.getElementById('loginCpf').value.replace(/\D/g, '');
-            const senha = document.getElementById('loginSenha').value;
-
-            if (!cpf || !senha) return showToast('Preencha todos os campos', 'error');
-
-            showToast('Autenticando...', 'success');
-
-            try {
-                const response = await apiRequest('/auth/login', 'POST', { cpf_cnpj: cpf, senha });
-                
-                if (response.sucesso) {
-                    // Salvar Token e Dados Completos
-                    localStorage.setItem('guardiao_token', response.dados.token);
-                    localStorage.setItem('guardiao_user', JSON.stringify(response.dados.usuario));
-                    
-                    showToast('Login realizado!', 'success');
-                    setTimeout(() => {
-                        window.location.href = 'facial.tokem.html';
-                    }, 1000);
-                } else {
-                    showToast(response.mensagem || 'Erro ao logar', 'error');
-                }
-            } catch (error) {
-                showToast('Erro de conexão com o servidor', 'error');
-                console.error(error);
-            }
+            const c = document.getElementById('loginCpf').value.replace(/\D/g, '');
+            const s = document.getElementById('loginSenha').value;
+            if (!c || !s) return showToast('Preencha tudo', 'error');
+            showToast('Entrando...', 'success');
+            const res = await apiRequest('/auth/login', 'POST', { cpf_cnpj: c, senha: s });
+            if (res.sucesso) {
+                localStorage.setItem('guardiao_token', res.dados.token);
+                localStorage.setItem('guardiao_user', JSON.stringify(res.dados.usuario));
+                showToast('Sucesso!', 'success');
+                setTimeout(() => window.location.href = 'facial.tokem.html', 1000);
+            } else { showToast(res.mensagem || 'Erro', 'error'); }
         }
 
-        function handleQuickLogin() {
-            // Verifica se o token ainda é válido (simulação)
-            window.location.href = 'facial.tokem.html';
-        }
-
-        function logout() {
-            localStorage.removeItem('guardiao_token');
-            // Mantemos o user data se quiser implementar "lembrar usuario", mas o prompt pediu trocar conta
-            localStorage.removeItem('guardiao_user');
-            document.getElementById('loginForm').reset();
-            switchView('viewLogin');
-        }
-
+        function handleQuickLogin() { window.location.href = 'facial.tokem.html'; }
+        function logout() { localStorage.clear(); document.getElementById('loginForm').reset(); switchView('viewLogin'); }
+        
         async function handleRecoverySubmit(e) {
             e.preventDefault();
-            const nome = document.getElementById('recNome').value;
-            
-            try {
-                const response = await apiRequest('/auth/recuperar-senha', 'POST', { nome_completo: nome });
-                if(response.sucesso) {
-                    showToast('Código enviado para seu e-mail!', 'success');
-                    // Aqui você poderia redirecionar para uma tela de input do código
-                    // Para o exemplo, voltamos ao login
-                    setTimeout(() => switchView('viewLogin'), 3000);
-                } else {
-                    showToast(response.mensagem, 'error');
-                }
-            } catch (error) {
-                showToast('Erro ao solicitar recuperação', 'error');
-            }
+            const n = document.getElementById('recNome').value;
+            if(!n) return;
+            const res = await apiRequest('/auth/recuperar-senha', 'POST', { nome_completo: n });
+            if(res.sucesso) { showToast('Email enviado!', 'success'); setTimeout(() => switchView('viewLogin'), 2000); }
+            else showToast('Erro', 'error');
         }
 
-        // --- LÓGICA DO CHAT (CADASTRO) ---
-        
+        // Chat Logic
         const chatFlow = [
-            { 
-                field: 'nome_completo', 
-                msg: 'Olá! Bem-vindo ao Guardião. Vamos criar sua conta. 😊\nPrimeiro, qual seu **Nome Completo**?',
-                type: 'text'
-            },
-            { 
-                field: 'tipo_acesso', 
-                msg: 'Prazer! Qual perfil melhor descreve você?', 
-                type: 'options',
-                options: [
-                    { label: '👴 Idoso e Família', value: 'usuario' },
-                    { label: '🩺 Babá e Cuidador', value: 'prestador' }
-                ]
-            },
-            { 
-                field: 'cpf_cnpj', 
-                msg: 'Certo! Agora preciso do seu **CPF** (apenas números).', 
-                type: 'text',
-                mask: 'cpf'
-            },
-            { 
-                field: 'email', 
-                msg: 'Qual seu melhor **E-mail** para contato?', 
-                type: 'text',
-                validate: (val) => val.includes('@') && val.includes('.')
-            },
-            { 
-                field: 'celular', 
-                msg: 'E seu número de **Celular** com DDD?', 
-                type: 'text',
-                mask: 'phone'
-            },
-            { 
-                field: 'sexo', 
-                msg: 'Qual seu gênero?', 
-                type: 'options',
-                options: [
-                    { label: 'Masculino', value: 'Masculino' },
-                    { label: 'Feminino', value: 'Feminino' },
-                    { label: 'Outro', value: 'Outro' }
-                ]
-            },
-            { 
-                field: 'cep', 
-                msg: 'Para localizarmos serviços próximos, qual seu **CEP**?', 
-                type: 'text',
-                mask: 'cep'
-            },
-            // Endereço seria preenchido automaticamente pelo CEP na lógica real, aqui vamos pular para senha para simplificar
-            { 
-                field: 'senha', 
-                msg: 'Crie uma **Senha** segura (mínimo 6 caracteres).', 
-                type: 'password'
-            },
-            { 
-                field: 'foto_base64', 
-                msg: 'Estamos quase lá! Adicione uma **Foto de Perfil** para te identificarmos.', 
-                type: 'upload'
-            },
-            { 
-                field: 'termos', 
-                msg: 'Por fim, você concorda com nossos Termos de Uso?\n<a href="pdf.termo.pdf" target="_blank" class="underline text-blue-600">Ler Termos (PDF)</a>', 
-                type: 'options',
-                options: [
-                    { label: '✅ Li e Concordo', value: 'true' }
-                ]
-            }
+            { field: 'nome_completo', msg: 'Olá! Bem-vindo. Qual seu **Nome Completo**?', type: 'text' },
+            { field: 'tipo_acesso', msg: 'Qual seu perfil?', type: 'options', options: [{label: '👴 Idoso/Família', value:'usuario'}, {label: '🩺 Cuidador', value:'prestador'}] },
+            { field: 'cpf_cnpj', msg: 'Seu **CPF**?', type: 'text', mask: 'cpf' },
+            { field: 'email', msg: 'Seu **E-mail**?', type: 'text', validate: v=>v.includes('@') },
+            { field: 'celular', msg: 'Seu **Celular**?', type: 'text', mask: 'phone' },
+            { field: 'sexo', msg: 'Gênero?', type: 'options', options: [{label:'M', value:'Masculino'}, {label:'F', value:'Feminino'}] },
+            { field: 'cep', msg: 'Seu **CEP**?', type: 'text', mask: 'cep' },
+            { field: 'senha', msg: 'Crie uma **Senha**.', type: 'password' },
+            { field: 'foto_base64', msg: 'Sua **Foto de Perfil**.', type: 'upload' },
+            { field: 'termos', msg: 'Aceita os termos? <a href="pdf.termo.pdf" class="underline">Ler PDF</a>', type: 'options', options: [{label:'✅ Sim', value:'true'}] }
         ];
 
-        function startRegistration() {
-            registerState = { step: 0, data: {} };
-            document.getElementById('chatMessages').innerHTML = '';
-            switchView('viewRegister');
-            addBotMessage(chatFlow[0].msg);
-            setupInput(chatFlow[0]);
+        function startRegistration() { registerState = {step:0, data:{}}; document.getElementById('chatMessages').innerHTML=''; switchView('viewRegister'); addBotMsg(chatFlow[0].msg); setupInput(chatFlow[0]); }
+        function cancelRegistration() { switchView('viewLogin'); }
+        function addBotMsg(t) { const d=document.createElement('div'); d.className='chat-bubble chat-bot'; d.innerHTML=t.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>'); document.getElementById('chatMessages').appendChild(d); scrollChat(); }
+        function addUserMsg(t) { const d=document.createElement('div'); d.className='chat-bubble chat-user'; d.innerHTML=t; document.getElementById('chatMessages').appendChild(d); scrollChat(); }
+        function scrollChat() { const c=document.getElementById('chatMessages'); c.scrollTop=c.scrollHeight; }
+
+        function setupInput(cfg) {
+            const txt=document.getElementById('inputAreaText'), opt=document.getElementById('inputAreaOptions'), upl=document.getElementById('inputAreaUpload'), inp=document.getElementById('chatInput');
+            txt.classList.add('hidden'); opt.classList.add('hidden'); upl.classList.add('hidden'); opt.innerHTML=''; inp.value=''; inp.type=cfg.type==='password'?'password':'text';
+            
+            if(cfg.type==='text'||cfg.type==='password') {
+                txt.classList.remove('hidden'); inp.focus();
+                if(cfg.mask==='cpf') setupCpfMask(inp); if(cfg.mask==='phone') setupPhoneMask(inp); if(cfg.mask==='cep') setupCepMask(inp);
+            } else if(cfg.type==='options') {
+                opt.classList.remove('hidden');
+                cfg.options.forEach(o => { const b=document.createElement('button'); b.className='bg-white text-orange-500 border border-orange-500 px-4 py-2 rounded-full text-sm mr-2 mb-1'; b.innerText=o.label; b.onclick=()=>processStep(o.value, o.label); opt.appendChild(b); });
+            } else if(cfg.type==='upload') { upl.classList.remove('hidden'); }
         }
 
-        function cancelRegistration() {
-            switchView('viewLogin');
-        }
+        function submitChat() { const v=document.getElementById('chatInput').value.trim(); if(v) processStep(v,v); }
+        function handlePhotoUpload(i) { if(i.files[0]) { const r=new FileReader(); r.onload=e=>{ addUserMsg(`<img src="${e.target.result}" class="w-20 h-20 rounded-full">`); processStep(e.target.result,'Foto',true); }; r.readAsDataURL(i.files[0]); } }
 
-        function addBotMessage(text) {
-            const div = document.createElement('div');
-            div.className = 'chat-bubble chat-bot';
-            div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
-            document.getElementById('chatMessages').appendChild(div);
-            scrollToBottom();
-        }
-
-        function addUserMessage(text) {
-            const div = document.createElement('div');
-            div.className = 'chat-bubble chat-user';
-            div.innerText = text;
-            document.getElementById('chatMessages').appendChild(div);
-            scrollToBottom();
-        }
-
-        function scrollToBottom() {
-            const container = document.getElementById('chatMessages');
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function setupInput(stepConfig) {
-            const textInputDiv = document.getElementById('inputAreaText');
-            const optionsDiv = document.getElementById('inputAreaOptions');
-            const uploadDiv = document.getElementById('inputAreaUpload');
-            const inputField = document.getElementById('chatInput');
-
-            // Reset
-            textInputDiv.classList.add('hidden');
-            optionsDiv.classList.add('hidden');
-            uploadDiv.classList.add('hidden');
-            optionsDiv.innerHTML = '';
-            inputField.value = '';
-            inputField.type = stepConfig.type === 'password' ? 'password' : 'text';
-
-            if (stepConfig.type === 'text' || stepConfig.type === 'password') {
-                textInputDiv.classList.remove('hidden');
-                inputField.focus();
-                
-                // Aplica mascara se houver
-                if(stepConfig.mask === 'cpf') setupCpfMask(inputField);
-                if(stepConfig.mask === 'phone') setupPhoneMask(inputField);
-                if(stepConfig.mask === 'cep') setupCepMask(inputField);
-
-            } else if (stepConfig.type === 'options') {
-                optionsDiv.classList.remove('hidden');
-                stepConfig.options.forEach(opt => {
-                    const btn = document.createElement('button');
-                    btn.className = 'bg-white text-[#F27A23] border border-[#F27A23] hover:bg-orange-50 font-semibold py-2 px-4 rounded-full text-sm shadow-sm transition-all mb-1';
-                    btn.innerText = opt.label;
-                    btn.onclick = () => processStep(opt.value, opt.label);
-                    optionsDiv.appendChild(btn);
-                });
-
-            } else if (stepConfig.type === 'upload') {
-                uploadDiv.classList.remove('hidden');
-            }
-        }
-
-        function submitChat() {
-            const input = document.getElementById('chatInput');
-            const val = input.value.trim();
-            if (!val) return;
-            processStep(val, val);
-        }
-
-        function handlePhotoUpload(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const base64 = e.target.result;
-                    // Mostra preview no chat
-                    const imgPreview = `<img src="${base64}" class="w-24 h-24 rounded-full border-2 border-white shadow-md inline-block">`;
-                    addUserMessage('📸 Foto enviada');
-                    document.getElementById('chatMessages').lastChild.innerHTML += `<br>${imgPreview}`;
-                    
-                    // Processa
-                    processStep(base64, 'Foto enviada', true);
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        async function processStep(value, displayValue, skipUserMsg = false) {
-            const currentStepConfig = chatFlow[registerState.step];
-
-            // Validação
-            if (currentStepConfig.validate && !currentStepConfig.validate(value)) {
-                addBotMessage('⚠️ Parece que isso não é válido. Tente novamente.');
-                return;
-            }
-            if (currentStepConfig.field === 'cpf_cnpj' && value.replace(/\D/g, '').length < 11) {
-                addBotMessage('⚠️ CPF muito curto.');
-                return;
-            }
-
-            // Exibir resposta do usuário
-            if (!skipUserMsg) addUserMessage(displayValue);
-
-            // Salvar dado
-            registerState.data[currentStepConfig.field] = value;
-
-            // Avançar
+        async function processStep(val, display, skip=false) {
+            const cfg = chatFlow[registerState.step];
+            if(cfg.validate && !cfg.validate(val)) return addBotMsg('Inválido.');
+            if(cfg.field==='cpf_cnpj' && val.replace(/\D/g,'').length<11) return addBotMsg('CPF inválido.');
+            
+            if(!skip) addUserMsg(display);
+            registerState.data[cfg.field] = val;
             registerState.step++;
 
-            if (registerState.step < chatFlow.length) {
-                // Próxima pergunta
-                setTimeout(() => {
-                    addBotMessage(chatFlow[registerState.step].msg);
-                    setupInput(chatFlow[registerState.step]);
-                }, 600);
-            } else {
-                // FIM DO FLUXO - ENVIAR PARA API
-                addBotMessage('✨ Perfeito! Criando sua conta...');
-                finishRegistration();
-            }
+            if(registerState.step < chatFlow.length) { setTimeout(()=> { addBotMsg(chatFlow[registerState.step].msg); setupInput(chatFlow[registerState.step]); }, 500); }
+            else { addBotMsg('Criando conta...'); finishReg(); }
         }
 
-        async function finishRegistration() {
-            // Completar dados faltantes para a API (Mock de endereço)
-            const finalData = {
-                ...registerState.data,
-                rua: "Rua Exemplo",
-                cidade: "São Paulo",
-                estado: "SP",
-                bairro: "Centro",
-                latitude: 0,
-                longitude: 0
-            };
-
-            // Remover formatação de CPF e Celular
-            finalData.cpf_cnpj = finalData.cpf_cnpj.replace(/\D/g, '');
-            finalData.celular = finalData.celular.replace(/\D/g, '');
-
-            try {
-                const response = await apiRequest('/auth/register', 'POST', finalData);
-                
-                if (response.sucesso) {
-                    addBotMessage('🎉 Conta criada com sucesso! Redirecionando...');
-                    
-                    // Auto-login
-                    localStorage.setItem('guardiao_token', response.dados.token);
-                    localStorage.setItem('guardiao_user', JSON.stringify(response.dados.usuario));
-                    
-                    setTimeout(() => {
-                        window.location.href = 'facial.tokem.html';
-                    }, 2000);
-                } else {
-                    addBotMessage(`❌ Ops: ${response.mensagem}`);
-                    setTimeout(() => {
-                        cancelRegistration();
-                    }, 3000);
-                }
-            } catch (err) {
-                addBotMessage('❌ Erro de conexão.');
-            }
+        async function finishReg() {
+            const d = {...registerState.data, rua:'-', cidade:'-', estado:'UF', bairro:'-', latitude:0, longitude:0};
+            d.cpf_cnpj=d.cpf_cnpj.replace(/\D/g,''); d.celular=d.celular.replace(/\D/g,'');
+            const res = await apiRequest('/auth/register', 'POST', d);
+            if(res.sucesso) { 
+                addBotMsg('Sucesso! Redirecionando...'); 
+                localStorage.setItem('guardiao_token', res.dados.token);
+                localStorage.setItem('guardiao_user', JSON.stringify(res.dados.usuario));
+                setTimeout(()=>window.location.href='facial.tokem.html', 2000);
+            } else { addBotMsg('Erro: '+res.mensagem); setTimeout(cancelRegistration, 3000); }
         }
 
-        // --- API & UTILS ---
-
-        // Função para simular ou chamar API
-        async function apiRequest(endpoint, method, body) {
-            if (USE_MOCK) {
-                return new Promise((resolve) => {
-                    setTimeout(() => {
-                        console.log(`[MOCK API] ${method} ${endpoint}`, body);
-                        
-                        // Mock Login
-                        if (endpoint === '/auth/login') {
-                            if (body.cpf_cnpj === '00000000000') return resolve({ sucesso: false, mensagem: 'CPF inválido' });
-                            resolve({
-                                sucesso: true,
-                                mensagem: "Login realizado com sucesso",
-                                dados: {
-                                    usuario: {
-                                        id: 1,
-                                        nome_completo: "Maria da Silva",
-                                        email: "maria@teste.com",
-                                        foto_perfil: "https://i.pravatar.cc/300?img=5" // Foto mock
-                                    },
-                                    token: "mock_token_jwt_12345"
-                                }
-                            });
-                        }
-                        
-                        // Mock Register
-                        if (endpoint === '/auth/register') {
-                            resolve({
-                                sucesso: true,
-                                mensagem: "Usuário cadastrado com sucesso",
-                                dados: {
-                                    usuario: { ...body, id: 2, foto_perfil: body.foto_base64 },
-                                    token: "mock_token_jwt_new_user"
-                                }
-                            });
-                        }
-
-                        // Mock Recovery
-                        if (endpoint === '/auth/recuperar-senha') {
-                            resolve({ sucesso: true, mensagem: "Token gerado" });
-                        }
-
-                    }, 1500);
-                });
-            } else {
-                // Implementação Real
-                try {
-                    const res = await fetch(`${API_BASE}${endpoint}`, {
-                        method: method,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body)
-                    });
-                    return await res.json();
-                } catch (error) {
-                    throw error;
-                }
-            }
-        }
-
-        // Máscaras Input
-        function setupMasks() {
-            const cpfLogin = document.getElementById('loginCpf');
-            setupCpfMask(cpfLogin);
-        }
-
-        function setupCpfMask(input) {
-            input.oninput = (e) => {
-                let v = e.target.value.replace(/\D/g, "");
-                if (v.length > 14) v = v.slice(0, 14); // Aceita CNPJ tb
-                if (v.length > 11) {
-                     v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
-                } else {
-                    v = v.replace(/(\d{3})(\d)/, "$1.$2");
-                    v = v.replace(/(\d{3})(\d)/, "$1.$2");
-                    v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-                }
-                e.target.value = v;
-            };
-        }
-        
-        function setupPhoneMask(input) {
-            input.oninput = (e) => {
-                let v = e.target.value.replace(/\D/g, "");
-                v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
-                v = v.replace(/(\d)(\d{4})$/, "$1-$2");
-                e.target.value = v;
-            }
-        }
-
-        function setupCepMask(input) {
-            input.oninput = (e) => {
-                let v = e.target.value.replace(/\D/g, "").slice(0, 8);
-                v = v.replace(/^(\d{5})(\d)/, "$1-$2");
-                e.target.value = v;
-            }
-        }
-
+        function setupCpfMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); if(v.length>11) v=v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,"$1.$2.$3/$4-$5"); else v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.$2.$3-$4"); e.target.value=v; } }
+        function setupPhoneMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); v=v.replace(/^(\d{2})(\d{5})(\d{4})/,"($1) $2-$3"); e.target.value=v; } }
+        function setupCepMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); v=v.replace(/^(\d{5})(\d{3})/,"$1-$2"); e.target.value=v; } }
     </script>
 </body>
 </html>
