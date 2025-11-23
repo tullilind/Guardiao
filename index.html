@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardião - Login</title>
+    <!-- Importando Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importando Fonte Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #F27A23; /* Laranja da marca */
+        }
+
+        /* Estilo para o texto vazado (Outline) */
+        .outline-text {
+            color: transparent;
+            -webkit-text-stroke: 2px rgba(255, 255, 255, 0.5); /* Traço branco semitransparente */
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        /* Placeholder styling */
+        ::placeholder {
+            color: #9CA3AF;
+            opacity: 1; 
+        }
+
+        /* Button interaction */
+        .btn-hover:active {
+            transform: scale(0.98);
+        }
+        
+        /* Ajuste específico para garantir que o texto de fundo não interfira nos cliques */
+        .background-decor {
+            pointer-events: none;
+            user-select: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden relative bg-[#F27A23]">
+
+    <!-- ELEMENTOS DE FUNDO (Decorativos - Texto Outline) -->
+    
+    <!-- Texto Vertical Esquerdo: "GUARD..." -->
+    <!-- Rotacionado -90deg para leitura de baixo para cima, alinhado à esquerda -->
+    <div class="background-decor absolute left-0 bottom-0 h-full flex items-center justify-center w-20 overflow-visible">
+        <h1 class="outline-text text-[15vh] md:text-[20vh] tracking-widest transform -rotate-90 whitespace-nowrap origin-center opacity-60">
+            GUARDIÃO
+        </h1>
+    </div>
+
+    <!-- Texto Horizontal Inferior: "...IÃO" -->
+    <!-- Posicionado no canto inferior direito/centro -->
+    <div class="background-decor absolute bottom-[-5%] right-0 w-full flex justify-end pr-4 md:pr-10 overflow-hidden">
+        <h1 class="outline-text text-[18vh] md:text-[25vh] tracking-tighter opacity-60 translate-y-4">
+            IÃO
+        </h1>
+    </div>
+
+    <!-- Curvas Brancas (Elemento gráfico da direita) -->
+    <div class="background-decor absolute top-0 right-0 h-full w-1/2 overflow-hidden">
+         <svg viewBox="0 0 200 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" class="h-full w-full text-white opacity-90 float-right">
+             <!-- Curva estilizada simulando a borda branca da imagem original -->
+            <path fill="currentColor" d="M150,0 C150,0 80,100 120,200 C160,300 50,400 50,400 L200,400 L200,0 Z" transform="translate(50,0) scale(1.5, 1)"/>
+            <!-- Curva secundária menor -->
+            <path fill="none" stroke="currentColor" stroke-width="2" d="M100,250 Q160,320 80,420" opacity="0.4" />
+        </svg>
+    </div>
+
+
+    <!-- CONTEÚDO PRINCIPAL (Centralizado) -->
+    <div class="relative z-10 w-full h-full flex flex-col items-center justify-center px-8">
+        
+        <!-- Card Container (limita a largura) -->
+        <div class="w-full max-w-sm">
+            
+            <!-- Logo -->
+            <div class="mb-10 flex justify-center">
+                <!-- Usando a imagem enviada -->
+                <img src="logo.sem.png" alt="Logo Guardião" class="w-28 md:w-36 drop-shadow-md">
+            </div>
+
+            <!-- Título "GUARDIÃO" abaixo do logo foi REMOVIDO conforme solicitado -->
+
+            <!-- Formulário -->
+            <form id="loginForm" class="w-full space-y-5">
+                
+                <!-- Campo CPF -->
+                <div class="relative group">
+                    <input 
+                        type="text" 
+                        id="cpf" 
+                        name="cpf" 
+                        placeholder="CPF" 
+                        maxlength="14"
+                        inputmode="numeric"
+                        class="w-full bg-white text-gray-700 rounded-lg py-3.5 px-5 outline-none focus:ring-4 focus:ring-orange-300/50 shadow-lg transition-all text-base font-medium placeholder-gray-400"
+                        required
+                    >
+                </div>
+
+                <!-- Campo Senha -->
+                <div class="relative group">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Senha" 
+                        class="w-full bg-white text-gray-700 rounded-lg py-3.5 px-5 outline-none focus:ring-4 focus:ring-orange-300/50 shadow-lg transition-all text-base font-medium placeholder-gray-400"
+                        required
+                    >
+                </div>
+
+                <!-- Botão Entrar -->
+                <button 
+                    type="submit" 
+                    class="w-full bg-white text-[#F27A23] font-extrabold py-3.5 rounded-lg shadow-xl mt-4 hover:bg-gray-50 active:scale-95 transition-all uppercase tracking-wide text-sm btn-hover"
+                >
+                    Entrar
+                </button>
+
+                <!-- Link Esqueci Senha -->
+                <div class="text-center pt-2">
+                    <a href="#" class="text-white text-sm hover:text-gray-100 transition-colors border-b border-white/40 pb-0.5 hover:border-white">
+                        Esqueci minha senha
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Funcional (Máscara + Validação) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cpfInput = document.getElementById('cpf');
+            const form = document.getElementById('loginForm');
+
+            // Máscara de CPF enquanto digita
+            cpfInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, "");
+                if (value.length > 11) value = value.slice(0, 11);
+
+                value = value.replace(/(\d{3})(\d)/, "$1.$2");
+                value = value.replace(/(\d{3})(\d)/, "$1.$2");
+                value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                
+                e.target.value = value;
+            });
+
+            // Validação simples no envio
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const cpf = document.getElementById('cpf').value;
+                const password = document.getElementById('password').value;
+
+                if(cpf.length < 14) {
+                    showToast("CPF incompleto", "error");
+                    return;
+                }
+                if(!password) {
+                    showToast("Digite sua senha", "error");
+                    return;
+                }
+
+                showToast("Autenticando...", "success");
+            });
+
+            // Sistema de Notificação (Toast)
+            function showToast(message, type) {
+                const existingToast = document.querySelector('.custom-toast');
+                if(existingToast) existingToast.remove();
+
+                const toast = document.createElement('div');
+                toast.className = `custom-toast fixed top-10 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-2xl text-white font-bold text-sm z-50 transition-all duration-300 opacity-0 translate-y-[-20px] ${type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`;
+                toast.innerText = message;
+                
+                document.body.appendChild(toast);
+
+                requestAnimationFrame(() => {
+                    toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+                });
+
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-[-20px]');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
