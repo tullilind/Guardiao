@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport ajustado para evitar zoom e garantir escala correta -->
+    <!-- Viewport para mobile: sem zoom, ajuste de escala -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Guardião - Biometria Facial</title>
     <!-- Tailwind CSS -->
@@ -15,44 +15,32 @@
     <script src="apisistema.js"></script>
 
     <style>
-        /* Garante que a altura ocupe 100% da tela visível real (Dynamic Viewport Height) */
+        /* CSS para garantir altura total em mobile e evitar seleção */
         body { 
             font-family: 'Montserrat', sans-serif; 
             background-color: #F27A23; 
-            height: 100dvh; /* Correção para mobile */
+            height: 100dvh;
             width: 100vw;
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
         }
 
-        /* Overlay da Câmera (Máscara de Foco) */
-        .camera-mask {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.85) 65%);
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        /* Moldura Oval Responsiva */
+        /* Moldura guia para o rosto (Responsiva) */
         .face-guide-border {
             position: absolute;
-            top: 45%; /* Levemente acima do centro para dar espaço aos botões */
-            left: 50%;
+            top: 45%; left: 50%;
             transform: translate(-50%, -50%);
-            
-            /* Tamanho Adaptativo: Nunca maior que a tela */
             width: min(70vw, 280px);
             height: min(55vh, 380px);
-            
             border: 2px dashed rgba(255, 255, 255, 0.6);
             border-radius: 50% 50% 45% 45%;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6); /* Escurece o fundo */
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75); /* Escurece o fundo */
             z-index: 11;
             transition: all 0.3s ease;
         }
         
+        /* Animação da borda */
         .face-guide-border::after {
             content: '';
             position: absolute;
@@ -69,34 +57,24 @@
             100% { transform: scale(1); opacity: 0.5; }
         }
 
-        /* Scanner Laser */
+        /* Linha de scanner */
         .scan-line {
-            width: 100%;
-            height: 2px;
-            background: #34D399;
-            position: absolute;
-            top: 0;
-            left: 0;
+            width: 100%; height: 2px; background: #34D399;
+            position: absolute; top: 0; left: 0;
             box-shadow: 0 0 10px #34D399;
             animation: scan 2.5s infinite linear;
-            z-index: 12;
-            opacity: 0.8;
+            z-index: 12; opacity: 0.8;
         }
         @keyframes scan {
-            0% { top: 0%; opacity: 0; }
-            15% { opacity: 1; }
-            85% { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
+            0% { top: 0%; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { top: 100%; opacity: 0; }
         }
 
         .hidden-view { display: none !important; }
-
-        /* Animação Modal */
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .modal-enter { animation: slideUp 0.3s ease-out forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 
-    <!-- BLOQUEIO DE SEGURANÇA (Anti-DevTools) -->
+    <!-- Bloqueio de Inspeção (Anti-F12) -->
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault()); 
         document.onkeydown = function(e) {
@@ -107,7 +85,7 @@
 </head>
 <body class="flex flex-col items-center justify-center relative bg-black">
 
-    <!-- Header / Logo (Fixo no topo seguro) -->
+    <!-- Header / Logo -->
     <div class="absolute top-4 z-30 flex flex-col items-center w-full px-4 pointer-events-none">
         <img src="logo.sem.png" alt="Logo Guardião" class="w-14 mb-1 drop-shadow-md opacity-90">
         <div class="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
@@ -116,8 +94,6 @@
         </div>
     </div>
 
-    <!-- ================== TELAS ================== -->
-
     <!-- 1. LOADING INICIAL -->
     <div id="loadingState" class="flex flex-col items-center text-center text-white z-20 px-4">
         <div class="relative w-16 h-16 mb-6">
@@ -125,63 +101,57 @@
             <div class="absolute inset-0 border-4 border-t-[#F27A23] rounded-full animate-spin"></div>
             <i data-lucide="scan-face" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white w-6 h-6"></i>
         </div>
-        <p id="loadingText" class="text-base font-medium animate-pulse">Iniciando sistema...</p>
+        <p id="loadingText" class="text-base font-medium animate-pulse">Conectando ao servidor seguro...</p>
     </div>
 
     <!-- 2. CÂMERA DE CAPTURA -->
     <div id="cameraState" class="hidden-view w-full h-full relative flex flex-col justify-between">
-        <!-- Vídeo Fullscreen -->
+        <!-- Vídeo (Espelhado) -->
         <video id="videoElement" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover transform scale-x-[-1]"></video>
         <canvas id="canvasElement" class="hidden"></canvas>
 
-        <!-- Elementos da Interface da Câmera -->
         <div class="face-guide-border">
             <div id="scanLine" class="scan-line hidden"></div>
         </div>
 
-        <!-- Espaçador Topo -->
+        <!-- Espaçador Superior -->
         <div></div>
 
-        <!-- Controles Inferiores (Posicionados com segurança) -->
-        <div class="w-full pb-8 z-40 flex flex-col items-center gap-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-10">
-            
-            <!-- Instruções Flutuantes -->
+        <!-- Controles Inferiores -->
+        <div class="w-full pb-8 z-40 flex flex-col items-center gap-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent pt-12">
             <div class="text-center px-6">
                 <p id="instructionTitle" class="font-bold text-lg text-[#F27A23] drop-shadow-md">Encaixe seu rosto</p>
                 <p id="instructionText" class="text-xs text-gray-200 drop-shadow-md mt-1">Sem óculos • Boa iluminação</p>
             </div>
-
-            <!-- Botão Capturar -->
             <button id="btnCapture" onclick="captureBiometry()" class="w-16 h-16 bg-white rounded-full border-4 border-[#F27A23] shadow-[0_0_15px_rgba(242,122,35,0.6)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all touch-manipulation">
                 <div class="w-12 h-12 bg-[#F27A23] rounded-full"></div>
             </button>
         </div>
     </div>
 
-    <!-- 3. MODAL DE CONSENTIMENTO (LGPD) - Adaptável -->
+    <!-- 3. MODAL DE CONSENTIMENTO (LGPD) -->
     <div id="consentModal" class="hidden-view fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/80 backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 modal-enter shadow-2xl relative overflow-hidden max-h-[90dvh] flex flex-col">
-            <!-- Faixa Decorativa -->
             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#F27A23] to-orange-400"></div>
-
+            
             <div class="flex flex-col items-center text-center mb-4 mt-2 flex-shrink-0">
                 <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-2 text-[#F27A23]">
                     <i data-lucide="shield-check" class="w-6 h-6"></i>
                 </div>
-                <h2 class="text-xl font-bold text-gray-800">Segurança Biométrica</h2>
+                <h2 class="text-xl font-bold text-gray-800">Biometria de Segurança</h2>
             </div>
 
             <div class="space-y-3 text-xs text-gray-600 text-justify bg-gray-50 p-3 rounded-xl border border-gray-100 overflow-y-auto flex-1">
-                <p><strong>Proteção:</strong> Coletamos sua biometria para blindar sua conta Guardião contra acessos não autorizados.</p>
-                <p><strong>Segurança:</strong> Dados criptografados em servidor próprio. Não compartilhamos com terceiros.</p>
-                <p><strong>LGPD:</strong> Uso estrito para validação. Você pode excluir seus dados a qualquer momento.</p>
+                <p><strong>Proteção Única:</strong> Coletamos sua biometria para blindar sua conta Guardião contra acessos não autorizados por terceiros.</p>
+                <p><strong>Criptografia:</strong> Seus dados são processados em nosso servidor seguro e jamais compartilhados externamente.</p>
+                <p><strong>LGPD:</strong> O uso é exclusivo para autenticação e validação de identidade. Você tem controle total e pode solicitar a exclusão dos dados.</p>
             </div>
 
             <div class="mt-4 flex flex-col gap-2 flex-shrink-0">
                 <button onclick="acceptConsent()" class="w-full bg-[#F27A23] text-white font-bold py-3 rounded-xl shadow-lg hover:bg-orange-600 transition-all flex items-center justify-center gap-2 text-sm">
                     <i data-lucide="camera" class="w-4 h-4"></i> Concordar e Iniciar
                 </button>
-                <button onclick="window.location.href='login_guardiao.html'" class="w-full text-gray-400 font-medium py-2 hover:text-gray-600 transition-colors text-xs">
+                <button onclick="window.location.href='login_guardiao.html'" class="w-full text-gray-400 font-medium py-2 hover:text-gray-600 transition-colors text-xs text-center">
                     Cancelar
                 </button>
             </div>
@@ -193,11 +163,9 @@
         <div id="resultIcon" class="mb-3 transform scale-110"></div>
         <h3 id="resultTitle" class="text-gray-800 text-xl font-bold mb-1"></h3>
         <p id="resultMessage" class="text-gray-600 mb-4 text-sm font-medium"></p>
+        <!-- Botão de tentar novamente visível apenas em erro -->
         <button id="btnRetry" onclick="restartProcess()" class="hidden w-full bg-[#F27A23] text-white font-bold py-3 rounded-xl shadow-md text-sm">Tentar Novamente</button>
     </div>
-
-    <!-- TOAST DE ALERTA -->
-    <div id="toast" class="fixed top-8 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-full shadow-xl text-white font-semibold text-xs z-[60] transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none flex items-center gap-2 border border-white/20 backdrop-blur-md w-max max-w-[90%] text-center justify-center"></div>
 
     <script>
         // --- ESTADO GLOBAL ---
@@ -206,10 +174,11 @@
         let biometryMode = null; // 'REGISTER' ou 'AUTH'
         let stream = null;
 
+        // --- INICIALIZAÇÃO ---
         document.addEventListener('DOMContentLoaded', () => {
             try { if (window.lucide) window.lucide.createIcons(); } catch(e){}
             
-            // 1. Validar Sessão
+            // 1. Validar Sessão (LocalStorage)
             const u = localStorage.getItem('guardiao_user');
             const t = localStorage.getItem('guardiao_token');
 
@@ -218,47 +187,179 @@
                 return;
             }
 
-            currentUser = JSON.parse(u);
-            token = t;
+            try {
+                currentUser = JSON.parse(u);
+                token = t;
+            } catch (e) {
+                window.location.href = 'login_guardiao.html';
+                return;
+            }
 
-            // 2. Verificar Dispositivo
+            // 2. Iniciar Fluxo de Verificação
             checkDeviceValidation();
         });
 
+        // Verifica se o dispositivo já foi validado localmente para este usuário
         function checkDeviceValidation() {
             const isDeviceVerified = localStorage.getItem(`device_verified_user_${currentUser.id}`);
             
             if (isDeviceVerified === 'true') {
-                showLoading("Dispositivo reconhecido. Autenticando...");
-                setTimeout(() => window.location.href = 'documentos.html', 1500);
+                showLoading("Dispositivo já validado. Acessando...");
+                setTimeout(() => window.location.href = 'documentos.html', 1000);
             } else {
+                // Se não, vai para a API checar status da biometria
                 checkBiometryStatusApi();
             }
         }
 
+        // --- CONSULTA API: STATUS ---
         async function checkBiometryStatusApi() {
-            showLoading("Verificando segurança...");
+            showLoading("Consultando status biométrico...");
             
             try {
+                // GET /api/verificacao/usuario/:id/biometria
                 const res = await apiRequest(`/verificacao/usuario/${currentUser.id}/biometria`);
                 
-                if (res.success && res.data.tem_biometria_facial) {
+                // Verifica resposta conforme documentação (success: true)
+                if (res.success && res.data.tem_biometria_facial === true) {
+                    // Se tem biometria -> Autenticar
                     biometryMode = 'AUTH';
                     updateInstructionText('AUTH');
                     startCamera();
                 } else {
+                    // Se não tem biometria -> Cadastrar (Abre Consentimento)
                     biometryMode = 'REGISTER';
                     showConsentModal();
                 }
             } catch (error) {
-                console.warn("Erro status, assumindo cadastro.", error);
-                biometryMode = 'REGISTER';
-                showConsentModal();
+                // SEM MOCKS: Exibe o erro real se falhar
+                showResult('error', 'Erro de Conexão', 'Falha ao verificar status: ' + error.message);
             }
         }
 
-        // --- CONTROLE DE UI ---
-        
+        // --- CÂMERA ---
+        async function startCamera() {
+            hideAllViews();
+            document.getElementById('cameraState').classList.remove('hidden-view');
+
+            try {
+                const video = document.getElementById('videoElement');
+                // Configuração ideal para mobile (frontal, alta resolução)
+                const constraints = { 
+                    video: { 
+                        facingMode: 'user', 
+                        width: { ideal: 1280 }, 
+                        height: { ideal: 720 } 
+                    } 
+                };
+                
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                // Garante reprodução em iOS
+                video.onloadedmetadata = () => { video.play().catch(e => console.log(e)); };
+            } catch (err) {
+                showResult('error', 'Sem Câmera', 'Não foi possível acessar a câmera. Verifique as permissões do navegador.');
+            }
+        }
+
+        function stopCamera() {
+            if (stream) stream.getTracks().forEach(track => track.stop());
+        }
+
+        // --- CAPTURA E ENVIO ---
+        async function captureBiometry() {
+            const video = document.getElementById('videoElement');
+            const canvas = document.getElementById('canvasElement');
+            const btn = document.getElementById('btnCapture');
+            const scanLine = document.getElementById('scanLine');
+
+            // Feedback Visual
+            btn.classList.add('scale-90', 'opacity-50');
+            scanLine.classList.remove('hidden');
+            
+            // Captura Frame
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0);
+
+            // Converte para Base64
+            const fotoBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+            try {
+                let endpoint = '';
+                
+                if (biometryMode === 'AUTH') {
+                    // 1.4 Autenticar
+                    endpoint = `/verificacao/usuario/${currentUser.id}/biometria/autenticar`;
+                } else {
+                    // 1.3 Cadastrar
+                    endpoint = `/verificacao/usuario/${currentUser.id}/biometria`;
+                }
+
+                // Envia para API (SEM MOCK)
+                const res = await apiRequest(endpoint, 'POST', { foto_base64: fotoBase64 });
+
+                if (res.success) {
+                    // Salva validação local apenas se a API confirmar
+                    localStorage.setItem(`device_verified_user_${currentUser.id}`, 'true');
+                    
+                    stopCamera();
+                    showResult('success', 'Validado!', biometryMode === 'AUTH' ? 'Identidade confirmada com sucesso.' : 'Biometria cadastrada com segurança.');
+                    
+                    setTimeout(() => window.location.href = 'documentos.html', 2500);
+                } else {
+                    // Tratamento para resposta de erro da API (ex: 401 Unauthorized)
+                    throw new Error(res.message || "Validação falhou.");
+                }
+
+            } catch (error) {
+                scanLine.classList.add('hidden');
+                btn.classList.remove('scale-90', 'opacity-50');
+                // Exibe erro real
+                showResult('error', 'Falha na Validação', error.message || 'Rosto não reconhecido. Tente novamente.');
+            }
+        }
+
+        // --- API REQUEST GENÉRICO (SEM MOCK) ---
+        async function apiRequest(endpoint, method = 'GET', body = null) {
+            // Garante uso da URL base definida em apisistema.js
+            if (typeof API_BASE_URL === 'undefined') {
+                throw new Error("Erro crítico: Configuração da API não encontrada.");
+            }
+            
+            const url = `${API_BASE_URL}${endpoint}`;
+            
+            const headers = { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            };
+            
+            const options = { method, headers };
+            if (body) options.body = JSON.stringify(body);
+            
+            try {
+                console.log(`[API] Request: ${method} ${url}`);
+                const response = await fetch(url, options);
+                
+                // Tenta fazer o parse do JSON
+                const data = await response.json();
+                
+                // Se o status HTTP não for ok (200-299), lança erro com a mensagem do backend
+                if (!response.ok) {
+                    throw new Error(data.message || data.mensagem || `Erro HTTP ${response.status}`);
+                }
+                
+                return data;
+            } catch (error) {
+                console.error("Erro API:", error);
+                throw error; // Repassa erro para ser exibido na UI
+            }
+        }
+
+        // --- UI HELPERS ---
         function showLoading(text) {
             document.getElementById('loadingText').innerText = text;
             hideAllViews();
@@ -278,13 +379,12 @@
         function updateInstructionText(mode) {
             const title = document.getElementById('instructionTitle');
             const text = document.getElementById('instructionText');
-            
             if (mode === 'AUTH') {
                 title.innerText = "Confirmar Identidade";
                 text.innerText = "Posicione seu rosto para liberar o acesso.";
             } else {
                 title.innerText = "Cadastrar Facial";
-                text.innerText = "Mantenha o rosto parado e iluminado.";
+                text.innerText = "Mantenha o rosto parado e bem iluminado.";
             }
         }
 
@@ -294,135 +394,10 @@
             });
         }
 
-        // --- CÂMERA ---
-        async function startCamera() {
-            hideAllViews();
-            document.getElementById('cameraState').classList.remove('hidden-view');
-
-            try {
-                const video = document.getElementById('videoElement');
-                
-                // Configuração robusta para mobile
-                const constraints = { 
-                    video: { 
-                        facingMode: 'user',
-                        width: { ideal: 1280 }, 
-                        height: { ideal: 720 } 
-                    } 
-                };
-
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = stream;
-                
-                // Garante play em iOS (às vezes precisa de user interaction, mas autoplay costuma funcionar com muted)
-                video.onloadedmetadata = () => {
-                    video.play().catch(e => console.log("Autoplay prevented:", e));
-                };
-
-            } catch (err) {
-                console.error(err);
-                showResult('error', 'Sem Câmera', 'Não foi possível acessar a câmera. Verifique as permissões.');
-            }
-        }
-
-        function stopCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-        }
-
-        async function captureBiometry() {
-            const video = document.getElementById('videoElement');
-            const canvas = document.getElementById('canvasElement');
-            const btn = document.getElementById('btnCapture');
-            const scanLine = document.getElementById('scanLine');
-
-            // Feedback Visual
-            btn.classList.add('scale-90', 'opacity-50');
-            scanLine.classList.remove('hidden'); 
-            
-            // Flash visual
-            const flash = document.createElement('div');
-            flash.className = "fixed inset-0 bg-white z-50 transition-opacity duration-150 pointer-events-none";
-            document.body.appendChild(flash);
-            setTimeout(() => { flash.classList.add('opacity-0'); setTimeout(() => flash.remove(), 150); }, 50);
-
-            // Captura
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, 0, 0);
-
-            const fotoBase64 = canvas.toDataURL('image/jpeg', 0.85);
-
-            try {
-                const endpoint = biometryMode === 'AUTH' 
-                    ? `/verificacao/usuario/${currentUser.id}/biometria/autenticar`
-                    : `/verificacao/usuario/${currentUser.id}/biometria`;
-
-                const res = await apiRequest(endpoint, 'POST', { foto_base64: fotoBase64 });
-
-                if (res.success) {
-                    localStorage.setItem(`device_verified_user_${currentUser.id}`, 'true');
-                    stopCamera();
-                    showResult('success', 'Sucesso!', biometryMode === 'AUTH' ? 'Acesso liberado.' : 'Biometria salva.');
-                    
-                    setTimeout(() => window.location.href = 'documentos.html', 2000);
-                } else {
-                    throw new Error(res.message || "Rosto não reconhecido.");
-                }
-
-            } catch (error) {
-                scanLine.classList.add('hidden');
-                btn.classList.remove('scale-90', 'opacity-50');
-                showResult('error', 'Falha', error.message || 'Tente melhorar a luz.');
-            }
-        }
-
-        // --- API ---
-        async function apiRequest(endpoint, method = 'GET', body = null) {
-            const fallbackUrl = "https://3005-ifjg6cargn3icag87vhwr-6eb715a0.manusvm.computer/api";
-            const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : fallbackUrl;
-            const url = `${baseUrl}${endpoint}`;
-            
-            const headers = { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            };
-            
-            const options = { method, headers };
-            if (body) options.body = JSON.stringify(body);
-            
-            try {
-                const response = await fetch(url, options);
-                const data = await response.json();
-                if (!response.ok && !data.success) throw new Error(data.message || `Erro ${response.status}`);
-                return data;
-            } catch (error) {
-                console.warn("API Error/Mock:", error);
-                return mockBiometryResponse(endpoint);
-            }
-        }
-
-        function mockBiometryResponse(endpoint) {
-            return new Promise(resolve => {
-                setTimeout(() => {
-                    if (endpoint.includes('/autenticar')) resolve({ success: true, message: "Autenticado" });
-                    else if (endpoint.includes('/biometria') && !endpoint.includes('autenticar')) {
-                        if (!biometryMode) resolve({ success: true, data: { tem_biometria_facial: false } });
-                        else resolve({ success: true, message: "Cadastrado" });
-                    }
-                }, 1000);
-            });
-        }
-
         function showResult(type, title, message) {
             hideAllViews();
             const resState = document.getElementById('resultState');
             resState.classList.remove('hidden-view');
-            
             const iconContainer = document.getElementById('resultIcon');
             const btnRetry = document.getElementById('btnRetry');
 
@@ -441,8 +416,13 @@
 
         function restartProcess() {
             hideAllViews();
-            updateInstructionText(biometryMode);
-            startCamera();
+            // Se falhou na API, tenta reiniciar o processo apropriado
+            if (biometryMode) {
+                updateInstructionText(biometryMode);
+                startCamera();
+            } else {
+                checkBiometryStatusApi(); // Caso tenha falhado antes de definir o modo
+            }
         }
     </script>
 </body>
