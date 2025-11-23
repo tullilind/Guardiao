@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Guardião - Documentação</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonte Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <!-- Ícones (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Configuração da API -->
+    <script src="apisistema.js"></script>
+
+    <style>
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: #F9FAFB;
+            height: 100dvh;
+            width: 100vw;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .header-bg {
+            background: linear-gradient(135deg, #F27A23 0%, #e06000 100%);
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0 10px 25px -5px rgba(242, 122, 35, 0.3);
+        }
+
+        .doc-card {
+            transition: all 0.3s ease;
+            border: 1px solid #eee;
+        }
+        .doc-card:active { transform: scale(0.98); }
+
+        .status-badge {
+            font-size: 0.7rem; padding: 4px 10px; border-radius: 20px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .status-pendente { background-color: #FEF3C7; color: #D97706; }
+        .status-aprovado { background-color: #D1FAE5; color: #059669; }
+        .status-rejeitado { background-color: #FEE2E2; color: #DC2626; }
+        .status-vazio { background-color: #F3F4F6; color: #6B7280; }
+
+        .hidden-view { display: none !important; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+    </style>
+
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault()); 
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123) return false; 
+            if(e.ctrlKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'U'.charCodeAt(0))) return false; 
+        }
+    </script>
+</head>
+<body class="flex flex-col bg-gray-50">
+
+    <!-- Loading Screen -->
+    <div id="pageLoading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+        <div class="w-16 h-16 border-4 border-orange-100 border-t-[#F27A23] rounded-full animate-spin mb-4"></div>
+        <p class="text-gray-500 font-medium text-sm">Verificando perfil...</p>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div id="mainContent" class="hidden-view flex-1 flex flex-col h-full relative">
+        
+        <!-- Header -->
+        <div class="header-bg pt-12 pb-10 px-6 text-white relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i data-lucide="file-text" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">Verificação</h1>
+                        <p class="text-white/80 text-xs font-medium">Envio de Documentos</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="text-white/80 hover:text-white"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <div id="globalStatusIcon" class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
+                    <p id="globalStatusText" class="text-sm font-semibold">Análise Pendente</p>
+                </div>
+                <p class="text-xs text-white/70 mt-1 leading-relaxed">
+                    Para ativar seu perfil de cuidador, precisamos validar seus documentos.
+                </p>
+            </div>
+        </div>
+
+        <!-- Lista de Documentos -->
+        <div class="flex-1 overflow-y-auto px-6 -mt-6 pb-24 z-20">
+            <div class="bg-white rounded-2xl shadow-xl p-2 space-y-2" id="documentsList"></div>
+        </div>
+
+        <!-- Botão de Ação (Final) -->
+        <div id="actionArea" class="hidden-view fixed bottom-0 left-0 w-full p-6 bg-white border-t border-gray-100 z-30">
+            <button onclick="goToDashboard()" class="w-full bg-green-500 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-green-600 transition-all flex items-center justify-center gap-2">
+                <i data-lucide="check-circle"></i> Tudo Pronto! Acessar App
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Upload -->
+    <div id="uploadModal" class="hidden-view fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-3xl p-6 modal-enter shadow-2xl">
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-lg font-bold text-gray-800 mb-1" id="modalDocTitle">Enviar Documento</h3>
+            <p class="text-sm text-gray-500 mb-6">Tire uma foto nítida ou escolha da galeria.</p>
+
+            <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center mb-6 hover:bg-gray-50 transition-colors relative">
+                <input type="file" id="fileInput" accept="image/*,application/pdf" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleFileSelect(this)">
+                <div id="uploadPlaceholder">
+                    <div class="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-3 text-[#F27A23]">
+                        <i data-lucide="camera" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-sm text-[#F27A23] font-bold block">Toque para enviar</span>
+                    <span class="text-xs text-gray-400">JPG, PNG ou PDF (Max 5MB)</span>
+                </div>
+                <div id="uploadPreview" class="hidden flex-col items-center">
+                    <i data-lucide="file-check" class="w-10 h-10 text-green-500 mb-2"></i>
+                    <span id="fileName" class="text-sm font-medium text-gray-700 truncate w-full">arquivo.jpg</span>
+                </div>
+            </div>
+
+            <button id="btnSendDoc" onclick="submitDocument()" disabled class="w-full bg-[#F27A23] disabled:bg-gray-300 text-white font-bold py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">Enviar para Análise</button>
+            <button onclick="closeModal()" class="w-full text-gray-400 font-medium py-3 mt-2 text-sm">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-xl text-white font-semibold text-sm z-[60] transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none flex items-center gap-2"></div>
+
+    <script>
+        let currentUser = null;
+        let token = null;
+        let currentDocType = null; 
+        const REQUIRED_DOCS = [
+            { type: 'RG_FRENTE', label: 'RG ou CNH (Frente)', icon: 'user-square' },
+            { type: 'RG_VERSO', label: 'RG ou CNH (Verso)', icon: 'user-square' },
+            { type: 'ANTECEDENTES', label: 'Antecedentes Criminais', icon: 'shield-alert' },
+            { type: 'RESIDENCIA', label: 'Comp. de Residência', icon: 'home' }
+        ];
+        let userDocuments = []; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            try { if (window.lucide) window.lucide.createIcons(); } catch(e){}
+            
+            const u = localStorage.getItem('guardiao_user');
+            const t = localStorage.getItem('guardiao_token');
+
+            if (!u || !t) {
+                window.location.href = 'login_guardiao.html';
+                return;
+            }
+
+            currentUser = JSON.parse(u);
+            token = t;
+
+            checkUserTypeAndRoute();
+        });
+
+        function checkUserTypeAndRoute() {
+            const tipo = currentUser.tipo_acesso || 'usuario'; 
+
+            // ROTEAMENTO AUTOMÁTICO
+            if (tipo === 'usuario' || tipo === 'familiar' || tipo === 'idoso') {
+                // Cliente não precisa de docs -> Vai para Home do Cliente
+                window.location.href = 'Sistemafamiliaidoso/boas.vindas.html'; 
+            } else {
+                // Prestador precisa de docs -> Carrega lista
+                loadDocuments();
+            }
+        }
+
+        async function loadDocuments() {
+            try {
+                const res = await apiRequest(`/documentos/usuario/${currentUser.id}`);
+                
+                if (res.success) {
+                    userDocuments = res.data || [];
+                    renderDocumentsList();
+                    document.getElementById('pageLoading').classList.add('hidden-view');
+                    document.getElementById('mainContent').classList.remove('hidden-view');
+                } else {
+                    throw new Error(res.message);
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Erro ao carregar documentos', 'error');
+                document.getElementById('pageLoading').classList.add('hidden-view');
+                document.getElementById('mainContent').classList.remove('hidden-view');
+                renderDocumentsList(); 
+            }
+        }
+
+        function renderDocumentsList() {
+            const container = document.getElementById('documentsList');
+            container.innerHTML = '';
+
+            let allApproved = true;
+            let pendingCount = 0;
+
+            REQUIRED_DOCS.forEach(reqDoc => {
+                const existingDoc = userDocuments.find(d => d.tipo_documento === reqDoc.label || d.tipo_documento === reqDoc.type);
+                let statusHtml = '', actionHtml = '', statusClass = 'status-vazio', statusText = 'Não Enviado';
+
+                if (existingDoc) {
+                    if (existingDoc.status === 'Aprovado') {
+                        statusClass = 'status-aprovado'; statusText = 'Aprovado';
+                        actionHtml = `<div class="text-green-500"><i data-lucide="check-circle" class="w-6 h-6"></i></div>`;
+                    } else if (existingDoc.status === 'Rejeitado') {
+                        statusClass = 'status-rejeitado'; statusText = 'Rejeitado'; allApproved = false;
+                        actionHtml = `<button onclick="openUploadModal('${reqDoc.label}')" class="text-[#F27A23] text-xs font-bold border border-[#F27A23] px-3 py-1.5 rounded-lg hover:bg-orange-50">Reenviar</button>`;
+                    } else {
+                        statusClass = 'status-pendente'; statusText = 'Em Análise'; allApproved = false; pendingCount++;
+                        actionHtml = `<div class="text-yellow-500 animate-pulse"><i data-lucide="clock" class="w-6 h-6"></i></div>`;
+                    }
+                } else {
+                    allApproved = false;
+                    actionHtml = `<button onclick="openUploadModal('${reqDoc.label}')" class="bg-[#F27A23] text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:bg-orange-600 active:scale-95 transition-transform">Enviar</button>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'doc-card bg-gray-50 rounded-xl p-4 flex items-center justify-between animate-slide-up';
+                card.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-gray-200 text-gray-500"><i data-lucide="${reqDoc.icon}" class="w-5 h-5"></i></div>
+                        <div><h4 class="text-sm font-bold text-gray-800">${reqDoc.label}</h4><span class="status-badge ${statusClass}">${statusText}</span></div>
+                    </div>
+                    <div>${actionHtml}</div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+            updateGlobalStatus(allApproved, pendingCount);
+        }
+
+        function updateGlobalStatus(allApproved, pendingCount) {
+            const statusText = document.getElementById('globalStatusText');
+            const statusIcon = document.getElementById('globalStatusIcon');
+            const actionArea = document.getElementById('actionArea');
+
+            if (allApproved) {
+                statusText.innerText = "Perfil Verificado";
+                statusIcon.className = "w-2 h-2 rounded-full bg-green-500";
+                actionArea.classList.remove('hidden-view'); 
+            } else {
+                actionArea.classList.add('hidden-view');
+                if (pendingCount > 0) {
+                    statusText.innerText = "Aguardando Aprovação da Equipe";
+                    statusIcon.className = "w-2 h-2 rounded-full bg-yellow-400 animate-pulse";
+                } else {
+                    statusText.innerText = "Envio Pendente";
+                    statusIcon.className = "w-2 h-2 rounded-full bg-red-500";
+                }
+            }
+        }
+
+        function openUploadModal(docLabel) {
+            currentDocType = docLabel;
+            document.getElementById('modalDocTitle').innerText = docLabel;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('uploadPlaceholder').classList.remove('hidden');
+            document.getElementById('uploadPreview').classList.add('hidden');
+            document.getElementById('btnSendDoc').disabled = true;
+            document.getElementById('btnSendDoc').innerText = "Enviar para Análise";
+            document.getElementById('uploadModal').classList.remove('hidden-view');
+        }
+
+        function closeModal() { document.getElementById('uploadModal').classList.add('hidden-view'); }
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if(file.size > 5 * 1024 * 1024) { showToast('Arquivo muito grande (Máx 5MB)', 'error'); input.value = ''; return; }
+                document.getElementById('uploadPlaceholder').classList.add('hidden');
+                document.getElementById('uploadPreview').classList.remove('hidden');
+                document.getElementById('uploadPreview').classList.add('flex');
+                document.getElementById('fileName').innerText = file.name;
+                document.getElementById('btnSendDoc').disabled = false;
+            }
+        }
+
+        async function submitDocument() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const btn = document.getElementById('btnSendDoc');
+            const originalText = btn.innerText;
+            btn.disabled = true; btn.innerText = "Enviando...";
+
+            try {
+                const formData = new FormData();
+                formData.append('arquivo', file);
+                const uploadUrl = `${API_BASE_URL}/arquivos`;
+                
+                console.log("[Upload] Enviando arquivo...");
+                const uploadRes = await fetch(uploadUrl, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                const uploadData = await uploadRes.json();
+                if (!uploadRes.ok || !uploadData.success) throw new Error(uploadData.message || "Erro no upload do arquivo");
+
+                const arquivoId = uploadData.data.id; 
+                const docPayload = { arquivo_id: arquivoId, tipo_documento: currentDocType };
+                const docRes = await apiRequest('/documentos', 'POST', docPayload);
+
+                if (docRes.success) {
+                    showToast('Documento enviado com sucesso!', 'success');
+                    closeModal();
+                    loadDocuments(); 
+                } else { throw new Error(docRes.message); }
+
+            } catch (error) {
+                console.error(error);
+                showToast(error.message || 'Falha no envio', 'error');
+                btn.innerText = originalText; btn.disabled = false;
+            }
+        }
+
+        function goToDashboard() {
+            // ROTA FINAL DO PRESTADOR
+            window.location.href = 'Sistemaprestador/boas.vindas.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('guardiao_token');
+            localStorage.removeItem('guardiao_user');
+            window.location.href = 'login_guardiao.html';
+        }
+
+        async function apiRequest(endpoint, method = 'GET', body = null) {
+            if (typeof API_BASE_URL === 'undefined') throw new Error("Config API ausente.");
+            const url = `${API_BASE_URL}${endpoint}`;
+            const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+            const options = { method, headers };
+            if (body) options.body = JSON.stringify(body);
+            const response = await fetch(url, options);
+            return await response.json();
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = type === 'success' ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>' : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+            toast.className = `fixed top-5 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-xl text-white font-semibold text-sm z-[60] transition-all duration-300 flex items-center gap-2 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+            toast.innerHTML = `${icon} ${msg}`;
+            toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-[-20px]'), 3500);
+        }
+    </script>
+</body>
+</html>
