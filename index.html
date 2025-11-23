@@ -11,20 +11,18 @@
     <!-- Ícones (Lucide) -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Importação da API Base -->
+    <!-- Carrega a configuração da base da API -->
     <script src="apisistema.js"></script>
 
     <style>
         body { font-family: 'Montserrat', sans-serif; background-color: #F27A23; }
         
-        /* Tipografia Decorativa */
         .outline-text { color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.5); font-weight: 900; line-height: 1; }
         
-        /* Animações */
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeInUp 0.4s ease-out forwards; }
         
-        /* Estilo Profissional do Chat */
+        /* Chat Styles */
         .chat-bubble {
             max-width: 85%;
             padding: 14px 18px;
@@ -36,39 +34,20 @@
             animation: fadeInUp 0.3s ease-out;
             position: relative;
         }
+        .chat-bot { background-color: #ffffff; color: #374151; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #f3f4f6; }
+        .chat-user { background-color: #FDBA74; color: #7c2d12; align-self: flex-end; border-bottom-right-radius: 2px; font-weight: 600; text-align: right; box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2); }
         
-        .chat-bot {
-            background-color: #ffffff;
-            color: #374151;
-            align-self: flex-start;
-            border-bottom-left-radius: 2px;
-            border: 1px solid #f3f4f6;
-        }
-        
-        .chat-user {
-            background-color: #FDBA74; /* Laranja suave */
-            color: #7c2d12;
-            align-self: flex-end;
-            border-bottom-right-radius: 2px;
-            font-weight: 600;
-            text-align: right;
-            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
-        }
-
-        /* Scrollbar Invisível mas funcional */
         .chat-container::-webkit-scrollbar { width: 4px; }
         .chat-container::-webkit-scrollbar-track { background: transparent; }
         .chat-container::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 10px; }
-
-        .hidden-view { display: none !important; }
         
-        /* Ajuste para inputs focados não darem zoom no iPhone */
+        .hidden-view { display: none !important; }
         input, select, textarea { font-size: 16px !important; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden relative bg-[#F27A23]">
 
-    <!-- ================= FUNDO DECORATIVO ================= -->
+    <!-- FUNDO DECORATIVO -->
     <div class="pointer-events-none select-none absolute inset-0 z-0">
         <div class="absolute left-0 bottom-0 h-full flex items-center justify-center w-20">
             <h1 class="outline-text text-[15vh] md:text-[20vh] tracking-widest transform -rotate-90 whitespace-nowrap origin-center opacity-60">GUARDIÃO</h1>
@@ -83,7 +62,7 @@
         </div>
     </div>
 
-    <!-- ================= ÁREA PRINCIPAL ================= -->
+    <!-- ÁREA PRINCIPAL -->
     <div class="relative z-10 w-full h-full flex flex-col items-center justify-center px-4 md:px-8">
         
         <!-- LOGO -->
@@ -91,10 +70,10 @@
             <img src="logo.sem.png" alt="Logo Guardião" class="w-24 md:w-28 drop-shadow-lg">
         </div>
 
-        <!-- CONTAINER DOS VIEWS (CARD) -->
+        <!-- CARD PRINCIPAL -->
         <div class="w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-white/50 relative overflow-hidden transition-all duration-500 ease-in-out flex flex-col" id="mainCard" style="min-height: 420px; max-height: 85vh;">
             
-            <!-- VIEW 1: LOGIN FORM -->
+            <!-- VIEW 1: LOGIN -->
             <div id="viewLogin" class="animate-fade-in flex flex-col justify-center p-8 h-full">
                 <div class="text-center mb-8">
                     <h2 class="text-gray-800 text-2xl font-bold">Bem-vindo</h2>
@@ -103,25 +82,15 @@
                 
                 <form id="loginForm" class="space-y-5">
                     <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="user" class="text-gray-400 w-5 h-5"></i>
-                        </div>
-                        <input type="text" id="loginCpf" placeholder="CPF ou CNPJ" maxlength="18" 
-                            class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all shadow-sm font-medium">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="user" class="text-gray-400 w-5 h-5"></i></div>
+                        <input type="text" id="loginCpf" placeholder="CPF ou CNPJ" maxlength="18" class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-orange-400 outline-none transition-all font-medium">
                     </div>
                     <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="lock" class="text-gray-400 w-5 h-5"></i>
-                        </div>
-                        <input type="password" id="loginSenha" placeholder="Senha" 
-                            class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all shadow-sm font-medium">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="lock" class="text-gray-400 w-5 h-5"></i></div>
+                        <input type="password" id="loginSenha" placeholder="Senha" class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-orange-400 outline-none transition-all font-medium">
                     </div>
-
-                    <button type="submit" class="w-full bg-gradient-to-r from-[#F27A23] to-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all uppercase tracking-wide text-sm mt-2">
-                        Entrar
-                    </button>
+                    <button type="submit" class="w-full bg-gradient-to-r from-[#F27A23] to-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all uppercase tracking-wide text-sm mt-2">Entrar</button>
                 </form>
-
                 <div class="flex justify-between items-center mt-8 text-sm font-medium">
                     <button onclick="switchView('viewRecovery')" class="text-gray-500 hover:text-orange-600 transition-colors">Esqueci a senha</button>
                     <button onclick="startRegistration()" class="text-orange-600 hover:text-orange-700 bg-orange-50 px-4 py-1.5 rounded-full border border-orange-100 hover:bg-orange-100 transition-all">Criar Conta</button>
@@ -131,60 +100,32 @@
             <!-- VIEW 2: LOGGED IN -->
             <div id="viewLoggedIn" class="hidden-view animate-fade-in flex flex-col items-center justify-center p-8 h-full text-center">
                 <div class="relative mb-6">
-                    <div class="w-24 h-24 rounded-full border-4 border-orange-100 overflow-hidden shadow-xl">
+                    <div class="w-24 h-24 rounded-full border-4 border-orange-100 overflow-hidden shadow-xl bg-gray-100">
+                        <!-- Imagem carregada via Base64 -->
                         <img id="userAvatar" src="" alt="Foto Usuário" class="w-full h-full object-cover">
                     </div>
                     <div class="absolute bottom-1 right-1 bg-green-500 w-5 h-5 rounded-full border-2 border-white animate-pulse"></div>
                 </div>
-                
                 <h3 class="text-gray-800 text-xl font-bold mb-1">Olá, <span id="userName" class="text-[#F27A23]">Usuário</span>!</h3>
                 <p class="text-gray-500 text-sm mb-8">É bom te ver por aqui.</p>
-
-                <button onclick="handleQuickLogin()" class="w-full bg-[#F27A23] text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-orange-600 active:scale-[0.98] transition-all mb-3">
-                    Continuar Acesso
-                </button>
-                
-                <button onclick="logout()" class="text-gray-400 text-sm hover:text-gray-600 font-medium py-2">
-                    Entrar com outra conta
-                </button>
+                <button onclick="handleQuickLogin()" class="w-full bg-[#F27A23] text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-orange-600 active:scale-[0.98] transition-all mb-3">Continuar Acesso</button>
+                <button onclick="logout()" class="text-gray-400 text-sm hover:text-gray-600 font-medium py-2">Entrar com outra conta</button>
             </div>
 
-            <!-- VIEW 3: CHAT REGISTER (Atualizado) -->
+            <!-- VIEW 3: CHAT REGISTER -->
             <div id="viewRegister" class="hidden-view flex flex-col h-[550px] bg-gray-50">
-                <!-- Header Profissional -->
                 <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-100 shadow-sm z-10">
                     <button onclick="cancelRegistration()" class="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
-                    <div class="flex flex-col items-center">
-                        <span class="text-gray-800 font-bold text-sm">Cadastro Guardião</span>
-                        <span class="text-[#F27A23] text-xs font-medium">Assistente Virtual</span>
-                    </div>
-                    <div class="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-[#F27A23]">
-                        <i data-lucide="bot" class="w-5 h-5"></i>
-                    </div>
+                    <div class="flex flex-col items-center"><span class="text-gray-800 font-bold text-sm">Cadastro Guardião</span><span class="text-[#F27A23] text-xs font-medium">Assistente Virtual</span></div>
+                    <div class="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-[#F27A23]"><i data-lucide="bot" class="w-5 h-5"></i></div>
                 </div>
-
-                <!-- Área de Mensagens -->
-                <div id="chatMessages" class="flex-1 overflow-y-auto chat-container flex flex-col p-4 space-y-2 bg-slate-50">
-                    <!-- Mensagens dinâmicas -->
-                </div>
-
-                <!-- Área de Input -->
+                <div id="chatMessages" class="flex-1 overflow-y-auto chat-container flex flex-col p-4 space-y-2 bg-slate-50"></div>
                 <div class="bg-white p-3 border-t border-gray-100 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-                    
-                    <!-- Input de Texto -->
                     <div id="inputAreaText" class="flex gap-2 items-center">
                         <input type="text" id="chatInput" class="flex-1 bg-gray-100 text-gray-800 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 focus:bg-white transition-all shadow-inner" placeholder="Digite sua resposta..." autocomplete="off">
-                        <button onclick="submitChat()" class="bg-[#F27A23] text-white p-3 rounded-full shadow-lg hover:bg-orange-600 active:scale-90 transition-all">
-                            <i data-lucide="send" class="w-5 h-5"></i>
-                        </button>
+                        <button onclick="submitChat()" class="bg-[#F27A23] text-white p-3 rounded-full shadow-lg hover:bg-orange-600 active:scale-90 transition-all"><i data-lucide="send" class="w-5 h-5"></i></button>
                     </div>
-                    
-                    <!-- Botões de Opção -->
-                    <div id="inputAreaOptions" class="hidden flex flex-col gap-2 w-full">
-                        <!-- Botões injetados via JS -->
-                    </div>
-
-                    <!-- Botão Upload -->
+                    <div id="inputAreaOptions" class="hidden flex flex-col gap-2 w-full"></div>
                     <div id="inputAreaUpload" class="hidden flex justify-center py-2">
                          <label class="cursor-pointer bg-white text-[#F27A23] border-2 border-[#F27A23] px-6 py-3 rounded-full font-bold shadow-sm flex items-center gap-2 hover:bg-orange-50 w-full justify-center transition-all active:scale-95">
                             <i data-lucide="camera" class="w-5 h-5"></i> Tirar ou Escolher Foto
@@ -198,26 +139,18 @@
             <div id="viewRecovery" class="hidden-view animate-fade-in flex flex-col justify-center p-8 h-full bg-white">
                 <button onclick="switchView('viewLogin')" class="absolute top-6 left-6 text-gray-400 hover:text-gray-600"><i data-lucide="arrow-left"></i></button>
                 <div class="text-center mb-6 mt-4">
-                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 text-[#F27A23]">
-                        <i data-lucide="key-round" class="w-8 h-8"></i>
-                    </div>
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 text-[#F27A23]"><i data-lucide="key-round" class="w-8 h-8"></i></div>
                     <h2 class="text-gray-800 text-2xl font-bold">Recuperar Senha</h2>
                     <p class="text-gray-500 text-sm mt-2 px-4">Informe seu nome completo para buscarmos seu cadastro.</p>
                 </div>
-                
                 <form id="recoveryForm" class="space-y-4">
-                    <div class="relative">
-                        <input type="text" id="recNome" placeholder="Nome Completo" 
-                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-orange-300 outline-none transition-all text-gray-800 font-medium">
-                    </div>
+                    <div class="relative"><input type="text" id="recNome" placeholder="Nome Completo" class="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-orange-300 outline-none transition-all text-gray-800 font-medium"></div>
                     <button type="submit" class="w-full bg-[#F27A23] text-white font-bold py-3.5 rounded-xl shadow-lg mt-2 hover:bg-orange-600 transition-all">Enviar Código</button>
                 </form>
             </div>
-
         </div>
     </div>
 
-    <!-- TOAST -->
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-2xl text-white font-semibold text-sm z-50 transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none flex items-center gap-2"></div>
 
     <script>
@@ -225,35 +158,79 @@
         async function apiRequest(endpoint, method = 'GET', body = null) {
             const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:3005/api';
             const url = `${baseUrl}${endpoint}`;
+            
             const headers = { 'Content-Type': 'application/json' };
             const token = localStorage.getItem('guardiao_token');
             if (token) headers['Authorization'] = `Bearer ${token}`;
+            
             const options = { method, headers };
             if (body) options.body = JSON.stringify(body);
             
             try {
+                // Requisição Real
                 const response = await fetch(url, options);
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.mensagem || `Erro ${response.status}`);
+                
+                // Tratamento de erro HTTP
+                if (!response.ok) {
+                    throw new Error(data.message || data.mensagem || `Erro ${response.status}`);
+                }
+                
                 return data;
             } catch (error) {
-                console.warn("API Error (Mocking response):", error);
+                console.warn(`[API] Erro em ${url}:`, error);
+                // Fallback para Mock se a API real falhar (para demonstração)
                 return mockLocalResponse(endpoint, body);
             }
         }
 
+        // Mock atualizado com estrutura da Nova Documentação (200 OK, success: true, data: {...})
         function mockLocalResponse(endpoint, body) {
             return new Promise(resolve => {
                 setTimeout(() => {
+                    // MOCK LOGIN
                     if (endpoint === '/auth/login') {
-                        if (body.cpf_cnpj === '00000000000') resolve({ sucesso: false, mensagem: 'Credenciais inválidas' });
-                        else resolve({ sucesso: true, dados: { token: 'mock123', usuario: { nome_completo: 'Usuário Teste', foto_perfil: 'https://via.placeholder.com/150' } } });
-                    } else if (endpoint === '/auth/register') {
-                        resolve({ sucesso: true, dados: { token: 'mockNew', usuario: { ...body } } });
-                    } else {
-                        resolve({ sucesso: true, mensagem: 'Operação realizada' });
+                        if (body.cpf_cnpj === '00000000000') {
+                            resolve({ success: false, message: 'Credenciais inválidas' });
+                        } else {
+                            // Imagem em Base64 para teste
+                            const mockBase64 = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRjI3QTIzIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSI4IiByPSI1Ii8+PHBhdGggZD0iTTMgMjFhOSA5IDAgMCAxIDktOWg0YTkgOSAwIDAgMSA5IDl2MSIvPjwvc3ZnPg==";
+                            
+                            resolve({ 
+                                success: true, 
+                                message: "Login realizado com sucesso",
+                                data: { 
+                                    token: 'mock_token_jwt_12345', 
+                                    usuario: { 
+                                        id: 1, 
+                                        nome_completo: 'Usuário Teste Base64', 
+                                        email: 'teste@email.com',
+                                        // Aqui entra a string Base64 real que viria do banco
+                                        foto_perfil: mockBase64,
+                                        endereco: { rua: 'Rua Mock', cidade: 'Cidade Mock' }
+                                    } 
+                                } 
+                            });
+                        }
+                    } 
+                    // MOCK REGISTER
+                    else if (endpoint === '/auth/register') {
+                        resolve({ 
+                            success: true, 
+                            message: "Usuário cadastrado com sucesso",
+                            data: { 
+                                token: 'mock_token_new_user', 
+                                usuario: { 
+                                    ...body, 
+                                    foto_perfil: body.foto_base64 // Simula retorno da foto enviada
+                                } 
+                            } 
+                        });
+                    } 
+                    else {
+                        resolve({ success: true, message: 'Operação realizada' });
                     }
-                }, 800);
+                }, 1000);
             });
         }
 
@@ -272,25 +249,17 @@
         function switchView(viewId) {
             ['viewLogin', 'viewLoggedIn', 'viewRegister', 'viewRecovery'].forEach(id => document.getElementById(id).classList.add('hidden-view'));
             document.getElementById(viewId).classList.remove('hidden-view');
-            
             const card = document.getElementById('mainCard');
-            if (viewId === 'viewRegister') { 
-                card.style.height = '600px'; 
-                card.classList.remove('bg-white/95');
-                card.classList.add('bg-white'); 
-            } else { 
-                card.style.height = 'auto'; 
-                card.classList.add('bg-white/95');
-            }
+            if (viewId === 'viewRegister') { card.style.height = '600px'; card.classList.remove('bg-white/95'); card.classList.add('bg-white'); } 
+            else { card.style.height = 'auto'; card.classList.add('bg-white/95'); }
         }
 
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             const icon = type === 'success' ? '<i data-lucide="check-circle" class="w-5 h-5"></i>' : '<i data-lucide="alert-circle" class="w-5 h-5"></i>';
-            toast.className = `fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-2xl text-white font-semibold text-sm z-50 transition-all duration-300 flex items-center gap-2 ${type === 'success' ? 'bg-emerald-600' : 'bg-red-500'}`;
+            toast.className = `fixed top-5 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg shadow-2xl text-white font-semibold text-sm z-50 transition-all duration-300 flex items-center gap-2 ${type === 'success' ? 'bg-emerald-600' : 'bg-red-500'}`;
             toast.innerHTML = `${icon} ${msg}`;
             lucide.createIcons();
-            
             toast.classList.remove('opacity-0', 'translate-y-[-20px]');
             setTimeout(() => toast.classList.add('opacity-0', 'translate-y-[-20px]'), 3500);
         }
@@ -298,133 +267,119 @@
         function checkAuth() {
             const u = localStorage.getItem('guardiao_user');
             const t = localStorage.getItem('guardiao_token');
+            
             if (u && t) {
-                const user = JSON.parse(u);
-                document.getElementById('userAvatar').src = user.foto_perfil || 'https://ui-avatars.com/api/?name=' + user.nome_completo + '&background=F27A23&color=fff';
-                const name = user.nome_completo ? user.nome_completo.split(' ')[0] : 'Usuário';
-                document.getElementById('userName').innerText = name;
-                switchView('viewLoggedIn');
-            } else { switchView('viewLogin'); }
+                try {
+                    const user = JSON.parse(u);
+                    
+                    // Lógica de Avatar: Usa a Base64 se existir, senão usa placeholder
+                    const avatarImg = document.getElementById('userAvatar');
+                    
+                    if (user.foto_perfil && user.foto_perfil.startsWith('data:image')) {
+                        avatarImg.src = user.foto_perfil; // Usa Base64 direto
+                    } else {
+                        // Fallback para iniciais
+                        avatarImg.src = `https://ui-avatars.com/api/?name=${user.nome_completo}&background=F27A23&color=fff`;
+                    }
+                    
+                    const name = user.nome_completo ? user.nome_completo.split(' ')[0] : 'Usuário';
+                    document.getElementById('userName').innerText = name;
+                    switchView('viewLoggedIn');
+                } catch (e) {
+                    console.error("Erro ao ler dados do usuário", e);
+                    logout();
+                }
+            } else { 
+                switchView('viewLogin'); 
+            }
         }
 
         async function handleLoginSubmit(e) {
             e.preventDefault();
             const c = document.getElementById('loginCpf').value.replace(/\D/g, '');
             const s = document.getElementById('loginSenha').value;
+            
             if (!c || !s) return showToast('Preencha todos os campos', 'error');
             
             const btn = e.target.querySelector('button');
-            const originalText = btn.innerText;
-            btn.innerText = 'Autenticando...';
-            btn.disabled = true;
-
+            const txt = btn.innerText; btn.innerText = 'Autenticando...'; btn.disabled = true;
+            
+            // Chamada à API
             const res = await apiRequest('/auth/login', 'POST', { cpf_cnpj: c, senha: s });
             
-            btn.innerText = originalText;
-            btn.disabled = false;
-
-            if (res.sucesso) {
-                localStorage.setItem('guardiao_token', res.dados.token);
-                localStorage.setItem('guardiao_user', JSON.stringify(res.dados.usuario));
-                showToast('Acesso concedido!', 'success');
-                setTimeout(() => window.location.href = 'facial.tokem.html', 800);
-            } else { showToast(res.mensagem || 'Credenciais incorretas', 'error'); }
+            btn.innerText = txt; btn.disabled = false;
+            
+            // Verificação baseada na nova documentação (success: true)
+            if (res.success) {
+                localStorage.setItem('guardiao_token', res.data.token);
+                // Salva o objeto usuário completo (incluindo a foto Base64)
+                localStorage.setItem('guardiao_user', JSON.stringify(res.data.usuario));
+                
+                showToast(res.message || 'Login realizado!', 'success');
+                
+                // Recarrega visualização do usuário logado
+                setTimeout(() => checkAuth(), 800);
+            } else { 
+                showToast(res.message || 'Erro ao realizar login', 'error'); 
+            }
         }
 
         function handleQuickLogin() { window.location.href = 'facial.tokem.html'; }
-        function logout() { localStorage.clear(); document.getElementById('loginForm').reset(); switchView('viewLogin'); }
         
-        async function handleRecoverySubmit(e) {
-            e.preventDefault();
-            const n = document.getElementById('recNome').value;
-            if(!n) return showToast('Digite seu nome', 'error');
-            
-            const res = await apiRequest('/auth/recuperar-senha', 'POST', { nome_completo: n });
-            if(res.sucesso) { showToast('Código enviado para seu e-mail/SMS!', 'success'); setTimeout(() => switchView('viewLogin'), 3000); }
-            else showToast('Usuário não encontrado', 'error');
+        function logout() { 
+            localStorage.removeItem('guardiao_token');
+            localStorage.removeItem('guardiao_user');
+            document.getElementById('loginForm').reset(); 
+            switchView('viewLogin'); 
         }
 
-        // --- LÓGICA DO CHAT ---
+        async function handleRecoverySubmit(e) {
+            e.preventDefault(); const n = document.getElementById('recNome').value; if(!n) return;
+            // API Recovery
+            const res = await apiRequest('/auth/recuperar-senha', 'POST', { nome_completo: n });
+            if(res.success) { // Novo padrão
+                showToast('Código enviado!', 'success'); 
+                setTimeout(() => switchView('viewLogin'), 3000); 
+            } else { 
+                showToast(res.message || 'Usuário não encontrado', 'error'); 
+            }
+        }
+
+        // --- CHAT LOGIC ---
         const chatFlow = [
             { field: 'nome_completo', msg: 'Olá! Sou o assistente do Guardião. Vamos configurar sua conta. 😊<br>Primeiro, como devo te chamar? (<b>Nome Completo</b>)', type: 'text' },
-            { 
-                field: 'tipo_acesso', 
-                msg: 'Prazer! Qual perfil de acesso você precisa? (Selecione uma das 4 opções)', 
-                type: 'options', 
-                options: [
-                    { label: '🧑‍🧑 Familiar / Responsável', value: 'familiar' },
-                    { label: '👴 Idoso / Assistido', value: 'idoso' },
-                    { label: '🩺 Cuidador Profissional', value: 'cuidador' },
-                    { label: '🏥 Profissional de Saúde', value: 'saude' }
-                ] 
-            },
-            { field: 'cpf_cnpj', msg: 'Entendido. Agora, digite seu <b>CPF</b> (somente números).', type: 'text', mask: 'cpf' },
-            { field: 'email', msg: 'Qual seu melhor <b>E-mail</b> para contato?', type: 'text', validate: v=>v.includes('@') && v.includes('.') },
-            { field: 'celular', msg: 'E seu número de <b>Celular</b> (WhatsApp)?', type: 'text', mask: 'phone' },
-            { field: 'sexo', msg: 'Como você se identifica?', type: 'options', options: [{label:'Masculino', value:'Masculino'}, {label:'Feminino', value:'Feminino'}, {label:'Outro', value:'Outro'}] },
-            { field: 'cep', msg: 'Informe seu <b>CEP</b> para localizarmos cuidadores próximos.', type: 'text', mask: 'cep' },
-            { field: 'senha', msg: 'Quase lá! Crie uma <b>Senha</b> segura (mínimo 6 dígitos).', type: 'password' },
-            { field: 'foto_base64', msg: 'Para finalizar, adicione uma <b>Foto de Perfil</b> bonita! 📸', type: 'upload' },
-            { field: 'termos', msg: 'Você aceita os <a href="pdf.termo.pdf" class="text-orange-600 font-bold underline">Termos de Uso</a> e Política de Privacidade?', type: 'options', options: [{label:'✅ Li e Concordo com Tudo', value:'true'}] }
+            { field: 'tipo_acesso', msg: 'Qual perfil de acesso você precisa?', type: 'options', options: [{label: '🧑‍🧑 Familiar', value:'familiar'}, {label: '👴 Idoso', value:'idoso'}, {label: '🩺 Cuidador', value:'cuidador'}, {label: '🏥 Profissional', value:'saude'}] },
+            { field: 'cpf_cnpj', msg: 'Digite seu <b>CPF</b>.', type: 'text', mask: 'cpf' },
+            { field: 'email', msg: 'Seu <b>E-mail</b>?', type: 'text', validate: v=>v.includes('@') },
+            { field: 'celular', msg: 'Seu <b>WhatsApp</b>?', type: 'text', mask: 'phone' },
+            { field: 'sexo', msg: 'Gênero?', type: 'options', options: [{label:'Masculino', value:'Masculino'}, {label:'Feminino', value:'Feminino'}, {label:'Outro', value:'Outro'}] },
+            { field: 'cep', msg: 'Informe seu <b>CEP</b>.', type: 'text', mask: 'cep' },
+            { field: 'senha', msg: 'Crie uma <b>Senha</b> (min 6 dígitos).', type: 'password' },
+            { field: 'foto_base64', msg: 'Sua <b>Foto de Perfil</b> 📸', type: 'upload' },
+            { field: 'termos', msg: 'Aceita os <a href="pdf.termo.pdf" class="text-orange-600 font-bold underline">Termos de Uso</a>?', type: 'options', options: [{label:'✅ Aceito', value:'true'}] }
         ];
 
         function startRegistration() { registerState = {step:0, data:{}}; document.getElementById('chatMessages').innerHTML=''; switchView('viewRegister'); addBotMsg(chatFlow[0].msg); setupInput(chatFlow[0]); }
         function cancelRegistration() { switchView('viewLogin'); }
-        
-        function addBotMsg(t) { 
-            const d=document.createElement('div'); 
-            d.className='chat-bubble chat-bot'; 
-            d.innerHTML=t; 
-            document.getElementById('chatMessages').appendChild(d); 
-            scrollChat(); 
-        }
-        
-        function addUserMsg(t) { 
-            const d=document.createElement('div'); 
-            d.className='chat-bubble chat-user'; 
-            d.innerHTML=t; 
-            document.getElementById('chatMessages').appendChild(d); 
-            scrollChat(); 
-        }
-        
-        function scrollChat() { 
-            const c=document.getElementById('chatMessages'); 
-            setTimeout(() => { c.scrollTop = c.scrollHeight; }, 50);
-        }
+        function addBotMsg(t) { const d=document.createElement('div'); d.className='chat-bubble chat-bot'; d.innerHTML=t; document.getElementById('chatMessages').appendChild(d); scrollChat(); }
+        function addUserMsg(t) { const d=document.createElement('div'); d.className='chat-bubble chat-user'; d.innerHTML=t; document.getElementById('chatMessages').appendChild(d); scrollChat(); }
+        function scrollChat() { const c=document.getElementById('chatMessages'); setTimeout(() => c.scrollTop = c.scrollHeight, 50); }
 
         function setupInput(cfg) {
-            const txt=document.getElementById('inputAreaText');
-            const opt=document.getElementById('inputAreaOptions');
-            const upl=document.getElementById('inputAreaUpload');
-            const inp=document.getElementById('chatInput');
-
-            txt.classList.add('hidden'); 
-            opt.classList.add('hidden'); 
-            upl.classList.add('hidden'); 
-            opt.innerHTML=''; 
-            inp.value=''; 
-            inp.type = cfg.type === 'password' ? 'password' : 'text';
-            inp.oninput = null; 
+            const txt=document.getElementById('inputAreaText'), opt=document.getElementById('inputAreaOptions'), upl=document.getElementById('inputAreaUpload'), inp=document.getElementById('chatInput');
+            txt.classList.add('hidden'); opt.classList.add('hidden'); upl.classList.add('hidden'); opt.innerHTML=''; inp.value=''; inp.type=cfg.type==='password'?'password':'text';
+            inp.oninput = null; // Limpa máscaras anteriores
 
             if(cfg.type==='text'||cfg.type==='password') {
-                txt.classList.remove('hidden'); 
-                inp.focus();
-                if(cfg.mask==='cpf') setupCpfMask(inp); 
-                if(cfg.mask==='phone') setupPhoneMask(inp); 
-                if(cfg.mask==='cep') setupCepMask(inp);
+                txt.classList.remove('hidden'); inp.focus();
+                if(cfg.mask==='cpf') setupCpfMask(inp); if(cfg.mask==='phone') setupPhoneMask(inp); if(cfg.mask==='cep') setupCepMask(inp);
             } else if(cfg.type==='options') {
                 opt.classList.remove('hidden');
                 cfg.options.forEach(o => { 
-                    const b=document.createElement('button'); 
-                    b.className='w-full bg-white border border-gray-200 text-gray-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 font-semibold py-3 px-4 rounded-xl text-left shadow-sm transition-all active:scale-[0.99] flex items-center justify-between group';
-                    b.innerHTML = `<span>${o.label}</span> <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 group-hover:text-orange-400"></i>`;
-                    b.onclick=()=>processStep(o.value, o.label); 
-                    opt.appendChild(b); 
-                });
-                lucide.createIcons();
-            } else if(cfg.type==='upload') { 
-                upl.classList.remove('hidden'); 
-            }
+                    const b=document.createElement('button'); b.className='w-full bg-white border border-gray-200 text-gray-700 hover:bg-orange-50 hover:border-orange-300 font-semibold py-3 px-4 rounded-xl text-left shadow-sm mb-2 flex justify-between';
+                    b.innerHTML=`<span>${o.label}</span> <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>`; b.onclick=()=>processStep(o.value, o.label); opt.appendChild(b); 
+                }); lucide.createIcons();
+            } else if(cfg.type==='upload') { upl.classList.remove('hidden'); }
         }
 
         function submitChat() { const v=document.getElementById('chatInput').value.trim(); if(v) processStep(v,v); }
@@ -432,102 +387,63 @@
 
         async function processStep(val, display, skip=false) {
             const cfg = chatFlow[registerState.step];
-            
-            // Validações Básicas
-            if(cfg.validate && !cfg.validate(val)) return addBotMsg('<span class="text-red-500 font-bold">⚠️ Formato inválido.</span><br>Por favor, verifique e tente novamente.');
-            if(cfg.field==='cpf_cnpj' && val.replace(/\D/g,'').length<11) return addBotMsg('⚠️ CPF precisa ter 11 dígitos.');
-            
-            // --- INTEGRAÇÃO VIACEP ---
-            // Verifica se é o campo de CEP para buscar endereço
+            if(cfg.validate && !cfg.validate(val)) return addBotMsg('⚠️ Inválido. Tente novamente.');
+            if(cfg.field==='cpf_cnpj' && val.replace(/\D/g,'').length<11) return addBotMsg('⚠️ CPF inválido.');
+
+            // ViaCEP
             if(cfg.field === 'cep') {
-                const cleanCep = val.replace(/\D/g, '');
-                
-                if(cleanCep.length !== 8) {
-                    return addBotMsg('⚠️ CEP deve ter 8 dígitos numéricos.');
-                }
-
-                // Mostra input do usuário antes de buscar
+                const cep = val.replace(/\D/g, '');
+                if(cep.length !== 8) return addBotMsg('⚠️ CEP deve ter 8 números.');
                 if(!skip) addUserMsg(display);
-                
-                // Feedback de busca
-                addBotMsg('🔍 <i>Buscando endereço...</i>');
-
+                addBotMsg('🔍 Buscando endereço...');
                 try {
-                    const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
-                    const addressData = await response.json();
-
-                    if(addressData.erro) {
-                        addBotMsg('⚠️ CEP não encontrado. Por favor, verifique e tente novamente.');
-                        return; // Impede avanço se CEP for inválido na API
-                    }
-
-                    // Salva dados do endereço no estado global
-                    registerState.data.rua = addressData.logradouro || '';
-                    registerState.data.bairro = addressData.bairro || '';
-                    registerState.data.cidade = addressData.localidade || '';
-                    registerState.data.estado = addressData.uf || '';
-
-                    // Bot confirma endereço encontrado
-                    addBotMsg(`✅ <b>Endereço localizado:</b><br>${addressData.logradouro}, ${addressData.bairro}<br>${addressData.localidade} - ${addressData.uf}`);
-
-                } catch (error) {
-                    console.error("Erro ViaCEP:", error);
-                    addBotMsg('⚠️ Erro ao consultar CEP. Vamos seguir apenas com o número.');
-                }
+                    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                    const addr = await r.json();
+                    if(addr.erro) { addBotMsg('⚠️ CEP não encontrado.'); return; }
+                    registerState.data.rua = addr.logradouro; registerState.data.bairro = addr.bairro;
+                    registerState.data.cidade = addr.localidade; registerState.data.estado = addr.uf;
+                    addBotMsg(`✅ Endereço: ${addr.logradouro}, ${addr.bairro} - ${addr.localidade}/${addr.uf}`);
+                } catch(e) { addBotMsg('⚠️ Erro no CEP. Seguindo...'); }
             } else {
-                // Comportamento padrão para outros campos
                 if(!skip) addUserMsg(display);
             }
 
-            // Salva o valor do campo atual
             registerState.data[cfg.field] = val;
             registerState.step++;
-
-            if(registerState.step < chatFlow.length) { 
-                setTimeout(()=> { 
-                    addBotMsg(chatFlow[registerState.step].msg); 
-                    setupInput(chatFlow[registerState.step]); 
-                }, 600); 
-            } else { 
-                addBotMsg('Perfeito! Criando sua conta...'); 
-                finishReg(); 
-            }
+            if(registerState.step < chatFlow.length) { setTimeout(()=> { addBotMsg(chatFlow[registerState.step].msg); setupInput(chatFlow[registerState.step]); }, 600); }
+            else { addBotMsg('Criando conta...'); finishReg(); }
         }
 
         async function finishReg() {
-            // Prepara payload final mesclando dados capturados (incluindo endereço do ViaCEP)
-            const d = {
-                rua: 'N/A', 
-                cidade: 'N/A', 
-                estado: 'UF', 
-                bairro: 'N/A', 
-                latitude: 0, 
-                longitude: 0,
-                ...registerState.data // Dados do chat e ViaCEP sobrescrevem os defaults
+            // Monta payload conforme documentação (incluindo foto_base64)
+            const d = { 
+                rua:'-', 
+                cidade:'-', 
+                estado:'UF', 
+                bairro:'-', 
+                latitude:0, 
+                longitude:0, 
+                ...registerState.data 
             };
             
-            // Limpeza final de dados
+            // Limpa formatação
             d.cpf_cnpj = d.cpf_cnpj.replace(/\D/g,''); 
             d.celular = d.celular.replace(/\D/g,'');
             
+            // Envia para API
             const res = await apiRequest('/auth/register', 'POST', d);
             
-            if(res.sucesso) { 
-                addBotMsg('<b>🎉 Sucesso!</b><br>Conta criada. Entrando...'); 
-                localStorage.setItem('guardiao_token', res.dados.token);
-                localStorage.setItem('guardiao_user', JSON.stringify(res.dados.usuario));
-                setTimeout(()=>window.location.href='facial.tokem.html', 2500);
+            if(res.success) { // Novo padrão
+                addBotMsg('🎉 Sucesso! Entrando...'); 
+                localStorage.setItem('guardiao_token', res.data.token);
+                localStorage.setItem('guardiao_user', JSON.stringify(res.data.usuario));
+                setTimeout(()=>window.location.href='facial.tokem.html', 2000);
             } else { 
-                addBotMsg('❌ <b>Erro:</b> '+res.mensagem); 
-                setTimeout(() => {
-                    addBotMsg('Reiniciando cadastro...');
-                    setTimeout(startRegistration, 2000);
-                }, 3000);
+                addBotMsg('❌ Erro: ' + (res.message || res.mensagem)); 
+                setTimeout(() => { addBotMsg('Reiniciando...'); setTimeout(startRegistration, 2000); }, 3000);
             }
         }
 
-        // --- MÁSCARAS ---
-        function setupMasks() { const i=document.getElementById('loginCpf'); setupCpfMask(i); }
         function setupCpfMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); if(v.length>11) v=v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,"$1.$2.$3/$4-$5"); else v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.$2.$3-$4"); e.target.value=v; } }
         function setupPhoneMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); v=v.replace(/^(\d{2})(\d{5})(\d{4})/,"($1) $2-$3"); e.target.value=v; } }
         function setupCepMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); v=v.replace(/^(\d{5})(\d{3})/,"$1-$2"); e.target.value=v; } }
