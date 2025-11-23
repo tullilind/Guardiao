@@ -124,7 +124,7 @@
                         <i data-lucide="camera" class="w-6 h-6"></i>
                     </div>
                     <span class="text-sm text-[#F27A23] font-bold block">Toque para enviar</span>
-                    <span class="text-xs text-gray-400">JPG, PNG ou PDF (Max 5MB)</span>
+                    <span class="text-xs text-gray-400">JPG, PNG ou PDF (Max 10MB)</span>
                 </div>
                 <div id="uploadPreview" class="hidden flex-col items-center">
                     <i data-lucide="file-check" class="w-10 h-10 text-green-500 mb-2"></i>
@@ -140,16 +140,20 @@
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-xl text-white font-semibold text-sm z-[60] transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none flex items-center gap-2"></div>
 
     <script>
+        // --- ESTADO GLOBAL ---
         let currentUser = null;
         let token = null;
         let currentDocType = null; 
+        
+        // Lista de documentos exigidos na interface
         const REQUIRED_DOCS = [
             { type: 'RG_FRENTE', label: 'RG ou CNH (Frente)', icon: 'user-square' },
             { type: 'RG_VERSO', label: 'RG ou CNH (Verso)', icon: 'user-square' },
             { type: 'ANTECEDENTES', label: 'Antecedentes Criminais', icon: 'shield-alert' },
             { type: 'RESIDENCIA', label: 'Comp. de Residência', icon: 'home' }
         ];
-        let userDocuments = []; 
+        
+        let userDocuments = []; // Cache local dos documentos vindos da API
 
         document.addEventListener('DOMContentLoaded', () => {
             try { if (window.lucide) window.lucide.createIcons(); } catch(e){}
@@ -172,7 +176,7 @@
             const tipo = currentUser.tipo_acesso ? currentUser.tipo_acesso.toLowerCase() : ''; 
             const isPrestador = ['cuidador', 'prestador', 'saude', 'baba', 'enfermeiro'].some(role => tipo.includes(role));
 
-            // LÓGICA CORRIGIDA: Prioriza quem É prestador
+            // Prioriza quem É prestador para ficar na tela de validação
             if (isPrestador) {
                 console.log("Usuário Prestador: Verificando documentos...");
                 loadDocuments();
@@ -182,12 +186,14 @@
             }
         }
 
+        // --- CARREGAR DADOS DA API ---
         async function loadDocuments() {
             try {
+                // Endpoint 2.2: Listar Documentos por Usuário
                 const res = await apiRequest(`/documentos/usuario/${currentUser.id}`);
                 
                 if (res.success) {
-                    userDocuments = res.data || [];
+                    userDocuments = res.data || []; // Array de documentos
                     renderDocumentsList();
                     document.getElementById('pageLoading').classList.add('hidden-view');
                     document.getElementById('mainContent').classList.remove('hidden-view');
@@ -196,13 +202,14 @@
                 }
             } catch (error) {
                 console.error(error);
-                showToast('Erro ao carregar documentos', 'error');
+                showToast('Erro ao carregar documentos. Tente novamente.', 'error');
                 document.getElementById('pageLoading').classList.add('hidden-view');
                 document.getElementById('mainContent').classList.remove('hidden-view');
-                renderDocumentsList(); 
+                renderDocumentsList(); // Renderiza lista vazia se falhar
             }
         }
 
+        // --- RENDERIZAÇÃO ---
         function renderDocumentsList() {
             const container = document.getElementById('documentsList');
             container.innerHTML = '';
@@ -211,7 +218,9 @@
             let pendingCount = 0;
 
             REQUIRED_DOCS.forEach(reqDoc => {
+                // Verifica se o documento já existe na lista retornada pela API
                 const existingDoc = userDocuments.find(d => d.tipo_documento === reqDoc.label || d.tipo_documento === reqDoc.type);
+                
                 let statusHtml = '', actionHtml = '', statusClass = 'status-vazio', statusText = 'Não Enviado';
 
                 if (existingDoc) {
@@ -220,12 +229,15 @@
                         actionHtml = `<div class="text-green-500"><i data-lucide="check-circle" class="w-6 h-6"></i></div>`;
                     } else if (existingDoc.status === 'Rejeitado') {
                         statusClass = 'status-rejeitado'; statusText = 'Rejeitado'; allApproved = false;
+                        // Botão para reenviar
                         actionHtml = `<button onclick="openUploadModal('${reqDoc.label}')" class="text-[#F27A23] text-xs font-bold border border-[#F27A23] px-3 py-1.5 rounded-lg hover:bg-orange-50">Reenviar</button>`;
                     } else {
+                        // Pendente
                         statusClass = 'status-pendente'; statusText = 'Em Análise'; allApproved = false; pendingCount++;
                         actionHtml = `<div class="text-yellow-500 animate-pulse"><i data-lucide="clock" class="w-6 h-6"></i></div>`;
                     }
                 } else {
+                    // Não existe ainda
                     allApproved = false;
                     actionHtml = `<button onclick="openUploadModal('${reqDoc.label}')" class="bg-[#F27A23] text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:bg-orange-600 active:scale-95 transition-transform">Enviar</button>`;
                 }
@@ -250,14 +262,14 @@
             const statusIcon = document.getElementById('globalStatusIcon');
             const actionArea = document.getElementById('actionArea');
 
-            if (allApproved) {
+            if (allApproved && userDocuments.length >= REQUIRED_DOCS.length) {
                 statusText.innerText = "Perfil Verificado";
                 statusIcon.className = "w-2 h-2 rounded-full bg-green-500";
-                actionArea.classList.remove('hidden-view'); 
+                actionArea.classList.remove('hidden-view'); // Libera acesso
             } else {
                 actionArea.classList.add('hidden-view');
                 if (pendingCount > 0) {
-                    statusText.innerText = "Aguardando Aprovação da Equipe";
+                    statusText.innerText = "Aguardando Aprovação";
                     statusIcon.className = "w-2 h-2 rounded-full bg-yellow-400 animate-pulse";
                 } else {
                     statusText.innerText = "Envio Pendente";
@@ -266,9 +278,11 @@
             }
         }
 
+        // --- UPLOAD E ENVIO ---
         function openUploadModal(docLabel) {
             currentDocType = docLabel;
             document.getElementById('modalDocTitle').innerText = docLabel;
+            // Reset Form
             document.getElementById('fileInput').value = '';
             document.getElementById('uploadPlaceholder').classList.remove('hidden');
             document.getElementById('uploadPreview').classList.add('hidden');
@@ -282,7 +296,9 @@
         function handleFileSelect(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
-                if(file.size > 5 * 1024 * 1024) { showToast('Arquivo muito grande (Máx 5MB)', 'error'); input.value = ''; return; }
+                // Limite de 10MB conforme documentação
+                if(file.size > 10 * 1024 * 1024) { showToast('Arquivo muito grande (Máx 10MB)', 'error'); input.value = ''; return; }
+                
                 document.getElementById('uploadPlaceholder').classList.add('hidden');
                 document.getElementById('uploadPreview').classList.remove('hidden');
                 document.getElementById('uploadPreview').classList.add('flex');
@@ -301,11 +317,15 @@
             btn.disabled = true; btn.innerText = "Enviando...";
 
             try {
+                // PASSO 1: Upload do Arquivo (Endpoint 1.1)
                 const formData = new FormData();
                 formData.append('arquivo', file);
-                const uploadUrl = `${API_BASE_URL}/arquivos`;
                 
-                console.log("[Upload] Enviando arquivo...");
+                // Usar a URL completa para o upload (multipart/form-data não usa apiRequest padrão)
+                const uploadUrl = `${API_BASE_URL}/arquivos/upload`;
+                
+                console.log("[Upload] Enviando arquivo para:", uploadUrl);
+                
                 const uploadRes = await fetch(uploadUrl, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
@@ -313,17 +333,28 @@
                 });
 
                 const uploadData = await uploadRes.json();
-                if (!uploadRes.ok || !uploadData.success) throw new Error(uploadData.message || "Erro no upload do arquivo");
+                
+                if (!uploadRes.ok || !uploadData.success) {
+                    throw new Error(uploadData.message || "Erro no upload do arquivo");
+                }
 
                 const arquivoId = uploadData.data.id; 
-                const docPayload = { arquivo_id: arquivoId, tipo_documento: currentDocType };
+
+                // PASSO 2: Criar Documento (Endpoint 2.1)
+                const docPayload = { 
+                    arquivo_id: arquivoId, 
+                    tipo_documento: currentDocType 
+                };
+                
                 const docRes = await apiRequest('/documentos', 'POST', docPayload);
 
                 if (docRes.success) {
                     showToast('Documento enviado com sucesso!', 'success');
                     closeModal();
-                    loadDocuments(); 
-                } else { throw new Error(docRes.message); }
+                    loadDocuments(); // Recarrega a lista para atualizar o status
+                } else { 
+                    throw new Error(docRes.message); 
+                }
 
             } catch (error) {
                 console.error(error);
@@ -333,7 +364,6 @@
         }
 
         function goToDashboard() {
-            // ROTA FINAL DO PRESTADOR
             window.location.href = 'Sistemaprestador/boas.vindas.html';
         }
 
@@ -343,12 +373,14 @@
             window.location.href = 'login_guardiao.html';
         }
 
+        // --- HELPER GENÉRICO API ---
         async function apiRequest(endpoint, method = 'GET', body = null) {
             if (typeof API_BASE_URL === 'undefined') throw new Error("Config API ausente.");
             const url = `${API_BASE_URL}${endpoint}`;
             const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
             const options = { method, headers };
             if (body) options.body = JSON.stringify(body);
+            
             const response = await fetch(url, options);
             return await response.json();
         }
