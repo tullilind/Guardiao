@@ -1,1 +1,1 @@
-const API_BASE_URL = "https://3005-ifjg6cargn3icag87vhwr-6eb715a0.manusvm.computer/api";
+const API_BASE_URL = "https://3005-i0lqqmnhaphu1gzwoiwax-afce6c42.manusvm.computer//api";
