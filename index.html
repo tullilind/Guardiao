@@ -3,196 +3,685 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guardião - Login</title>
-    <!-- Importando Tailwind CSS -->
+    <title>Guardião - Acesso</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Importando Fonte Montserrat -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <!-- Fonte Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <!-- Ícones (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
-            background-color: #F27A23; /* Laranja da marca */
+            background-color: #F27A23;
         }
 
-        /* Estilo para o texto vazado (Outline) */
         .outline-text {
             color: transparent;
-            -webkit-text-stroke: 2px rgba(255, 255, 255, 0.5); /* Traço branco semitransparente */
+            -webkit-text-stroke: 2px rgba(255, 255, 255, 0.5);
             font-weight: 900;
             line-height: 1;
         }
 
-        /* Placeholder styling */
-        ::placeholder {
-            color: #9CA3AF;
-            opacity: 1; 
-        }
+        /* Animações */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
 
-        /* Button interaction */
-        .btn-hover:active {
-            transform: scale(0.98);
+        /* Estilo do Chat */
+        .chat-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .chat-bot {
+            background-color: #ffffff;
+            color: #374151;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .chat-user {
+            background-color: #FDBA74; /* Laranja claro */
+            color: #7c2d12;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            font-weight: 500;
+            text-align: right;
         }
         
-        /* Ajuste específico para garantir que o texto de fundo não interfira nos cliques */
-        .background-decor {
-            pointer-events: none;
-            user-select: none;
-            z-index: 0;
-        }
+        /* Scrollbar customizada para o chat */
+        .chat-container::-webkit-scrollbar { width: 6px; }
+        .chat-container::-webkit-scrollbar-track { background: transparent; }
+        .chat-container::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.3); border-radius: 10px; }
+
+        /* Utilitários */
+        .hidden-view { display: none !important; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden relative bg-[#F27A23]">
 
-    <!-- ELEMENTOS DE FUNDO (Decorativos - Texto Outline) -->
-    
-    <!-- Texto Vertical Esquerdo: "GUARD..." -->
-    <!-- Rotacionado -90deg para leitura de baixo para cima, alinhado à esquerda -->
-    <div class="background-decor absolute left-0 bottom-0 h-full flex items-center justify-center w-20 overflow-visible">
-        <h1 class="outline-text text-[15vh] md:text-[20vh] tracking-widest transform -rotate-90 whitespace-nowrap origin-center opacity-60">
-            GUARDIÃO
-        </h1>
-    </div>
-
-    <!-- Texto Horizontal Inferior: "...IÃO" -->
-    <!-- Posicionado no canto inferior direito/centro -->
-    <div class="background-decor absolute bottom-[-5%] right-0 w-full flex justify-end pr-4 md:pr-10 overflow-hidden">
-        <h1 class="outline-text text-[18vh] md:text-[25vh] tracking-tighter opacity-60 translate-y-4">
-            IÃO
-        </h1>
-    </div>
-
-    <!-- Curvas Brancas (Elemento gráfico da direita) -->
-    <div class="background-decor absolute top-0 right-0 h-full w-1/2 overflow-hidden">
-         <svg viewBox="0 0 200 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" class="h-full w-full text-white opacity-90 float-right">
-             <!-- Curva estilizada simulando a borda branca da imagem original -->
-            <path fill="currentColor" d="M150,0 C150,0 80,100 120,200 C160,300 50,400 50,400 L200,400 L200,0 Z" transform="translate(50,0) scale(1.5, 1)"/>
-            <!-- Curva secundária menor -->
-            <path fill="none" stroke="currentColor" stroke-width="2" d="M100,250 Q160,320 80,420" opacity="0.4" />
-        </svg>
-    </div>
-
-
-    <!-- CONTEÚDO PRINCIPAL (Centralizado) -->
-    <div class="relative z-10 w-full h-full flex flex-col items-center justify-center px-8">
-        
-        <!-- Card Container (limita a largura) -->
-        <div class="w-full max-w-sm">
-            
-            <!-- Logo -->
-            <div class="mb-10 flex justify-center">
-                <!-- Usando a imagem enviada -->
-                <img src="logo.sem.png" alt="Logo Guardião" class="w-28 md:w-36 drop-shadow-md">
-            </div>
-
-            <!-- Título "GUARDIÃO" abaixo do logo foi REMOVIDO conforme solicitado -->
-
-            <!-- Formulário -->
-            <form id="loginForm" class="w-full space-y-5">
-                
-                <!-- Campo CPF -->
-                <div class="relative group">
-                    <input 
-                        type="text" 
-                        id="cpf" 
-                        name="cpf" 
-                        placeholder="CPF" 
-                        maxlength="14"
-                        inputmode="numeric"
-                        class="w-full bg-white text-gray-700 rounded-lg py-3.5 px-5 outline-none focus:ring-4 focus:ring-orange-300/50 shadow-lg transition-all text-base font-medium placeholder-gray-400"
-                        required
-                    >
-                </div>
-
-                <!-- Campo Senha -->
-                <div class="relative group">
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        placeholder="Senha" 
-                        class="w-full bg-white text-gray-700 rounded-lg py-3.5 px-5 outline-none focus:ring-4 focus:ring-orange-300/50 shadow-lg transition-all text-base font-medium placeholder-gray-400"
-                        required
-                    >
-                </div>
-
-                <!-- Botão Entrar -->
-                <button 
-                    type="submit" 
-                    class="w-full bg-white text-[#F27A23] font-extrabold py-3.5 rounded-lg shadow-xl mt-4 hover:bg-gray-50 active:scale-95 transition-all uppercase tracking-wide text-sm btn-hover"
-                >
-                    Entrar
-                </button>
-
-                <!-- Link Esqueci Senha -->
-                <div class="text-center pt-2">
-                    <a href="#" class="text-white text-sm hover:text-gray-100 transition-colors border-b border-white/40 pb-0.5 hover:border-white">
-                        Esqueci minha senha
-                    </a>
-                </div>
-
-            </form>
+    <!-- ================= FUNDO DECORATIVO ================= -->
+    <div class="pointer-events-none select-none absolute inset-0 z-0">
+        <!-- Texto Vertical -->
+        <div class="absolute left-0 bottom-0 h-full flex items-center justify-center w-20">
+            <h1 class="outline-text text-[15vh] md:text-[20vh] tracking-widest transform -rotate-90 whitespace-nowrap origin-center opacity-60">
+                GUARDIÃO
+            </h1>
+        </div>
+        <!-- Texto Horizontal -->
+        <div class="absolute bottom-[-5%] right-0 w-full flex justify-end pr-4 md:pr-10">
+            <h1 class="outline-text text-[18vh] md:text-[25vh] tracking-tighter opacity-60 translate-y-4">
+                IÃO
+            </h1>
+        </div>
+        <!-- Curvas -->
+        <div class="absolute top-0 right-0 h-full w-1/2 overflow-hidden">
+             <svg viewBox="0 0 200 400" preserveAspectRatio="none" class="h-full w-full text-white opacity-90 float-right">
+                <path fill="currentColor" d="M150,0 C150,0 80,100 120,200 C160,300 50,400 50,400 L200,400 L200,0 Z" transform="translate(50,0) scale(1.5, 1)"/>
+            </svg>
         </div>
     </div>
 
-    <!-- Script Funcional (Máscara + Validação) -->
+    <!-- ================= ÁREA PRINCIPAL ================= -->
+    <div class="relative z-10 w-full h-full flex flex-col items-center justify-center px-4 md:px-8">
+        
+        <!-- LOGO (Fixo) -->
+        <div class="mb-6 flex justify-center transition-all duration-500" id="logoContainer">
+            <img src="logo.sem.png" alt="Logo Guardião" class="w-24 md:w-32 drop-shadow-md">
+        </div>
+
+        <!-- CONTAINER DOS VIEWS -->
+        <div class="w-full max-w-md bg-white/10 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20 relative overflow-hidden transition-all duration-300" id="mainCard" style="min-height: 400px;">
+            
+            <!-- VIEW 1: LOGIN FORM (Padrão) -->
+            <div id="viewLogin" class="animate-fade-in h-full flex flex-col justify-center">
+                <h2 class="text-white text-2xl font-bold text-center mb-6">Bem-vindo</h2>
+                
+                <form id="loginForm" class="space-y-4">
+                    <div class="relative group">
+                        <i data-lucide="user" class="absolute left-3 top-3.5 text-gray-400 w-5 h-5"></i>
+                        <input type="text" id="loginCpf" placeholder="CPF ou CNPJ" maxlength="18"
+                            class="w-full bg-white text-gray-700 rounded-lg py-3 px-10 outline-none focus:ring-2 focus:ring-orange-300 shadow-sm font-medium placeholder-gray-400">
+                    </div>
+                    <div class="relative group">
+                        <i data-lucide="lock" class="absolute left-3 top-3.5 text-gray-400 w-5 h-5"></i>
+                        <input type="password" id="loginSenha" placeholder="Senha"
+                            class="w-full bg-white text-gray-700 rounded-lg py-3 px-10 outline-none focus:ring-2 focus:ring-orange-300 shadow-sm font-medium placeholder-gray-400">
+                    </div>
+
+                    <button type="submit" class="w-full bg-white text-[#F27A23] font-bold py-3.5 rounded-lg shadow-lg hover:bg-gray-50 active:scale-95 transition-all uppercase tracking-wide text-sm mt-2">
+                        Entrar
+                    </button>
+                </form>
+
+                <div class="flex justify-between items-center mt-6 text-sm">
+                    <button onclick="switchView('viewRecovery')" class="text-white underline hover:text-gray-200">Esqueci a senha</button>
+                    <button onclick="startRegistration()" class="text-white font-bold hover:text-gray-200 bg-white/20 px-3 py-1 rounded-full">Criar Conta</button>
+                </div>
+            </div>
+
+            <!-- VIEW 2: LOGGED IN (Usuário Detectado) -->
+            <div id="viewLoggedIn" class="hidden-view animate-fade-in flex flex-col items-center justify-center h-full text-center py-4">
+                <div class="relative mb-6">
+                    <div class="w-28 h-28 rounded-full border-4 border-white overflow-hidden shadow-lg bg-gray-200">
+                        <img id="userAvatar" src="" alt="Foto Usuário" class="w-full h-full object-cover">
+                    </div>
+                    <div class="absolute bottom-0 right-0 bg-green-500 w-6 h-6 rounded-full border-2 border-white"></div>
+                </div>
+                
+                <h3 class="text-white text-xl font-medium mb-1">Olá, <span id="userName" class="font-bold">Usuário</span>!</h3>
+                <p class="text-white/80 text-sm mb-8">Bem-vindo de volta.</p>
+
+                <button onclick="handleQuickLogin()" class="w-full bg-white text-[#F27A23] font-bold py-3.5 rounded-lg shadow-lg hover:bg-gray-50 active:scale-95 transition-all mb-4">
+                    Continuar como <span id="btnUserName">Usuário</span>
+                </button>
+                
+                <button onclick="logout()" class="text-white text-sm hover:underline opacity-80 hover:opacity-100">
+                    Trocar de conta
+                </button>
+            </div>
+
+            <!-- VIEW 3: CHAT REGISTRATION -->
+            <div id="viewRegister" class="hidden-view flex flex-col h-[500px]">
+                <!-- Header do Chat -->
+                <div class="flex items-center justify-between border-b border-white/20 pb-2 mb-2">
+                    <button onclick="cancelRegistration()" class="text-white hover:bg-white/20 p-1 rounded-full"><i data-lucide="arrow-left"></i></button>
+                    <span class="text-white font-bold text-sm">Cadastro Guardião</span>
+                    <div class="w-6"></div>
+                </div>
+
+                <!-- Área de Mensagens -->
+                <div id="chatMessages" class="flex-1 overflow-y-auto chat-container flex flex-col p-2 space-y-3">
+                    <!-- Mensagens inseridas via JS -->
+                </div>
+
+                <!-- Área de Input -->
+                <div class="mt-2 pt-2 border-t border-white/20 relative">
+                    <div id="inputAreaText" class="flex gap-2">
+                        <input type="text" id="chatInput" class="flex-1 rounded-full px-4 py-2 text-sm text-gray-700 focus:outline-none shadow-lg" placeholder="Digite aqui..." autocomplete="off">
+                        <button onclick="submitChat()" class="bg-white text-[#F27A23] p-2 rounded-full shadow-lg hover:bg-gray-100"><i data-lucide="send" class="w-5 h-5"></i></button>
+                    </div>
+                    
+                    <!-- Botões de Opção (Dinâmico) -->
+                    <div id="inputAreaOptions" class="hidden flex flex-wrap gap-2 justify-center">
+                        <!-- Botões inseridos via JS -->
+                    </div>
+
+                    <!-- Botão Upload (Dinâmico) -->
+                    <div id="inputAreaUpload" class="hidden flex justify-center">
+                         <label class="cursor-pointer bg-white text-[#F27A23] px-4 py-2 rounded-full font-bold shadow-lg flex items-center gap-2 hover:bg-gray-100">
+                            <i data-lucide="camera"></i> Tirar/Escolher Foto
+                            <input type="file" id="photoUpload" accept="image/*" class="hidden" onchange="handlePhotoUpload(this)">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 4: RECOVERY -->
+            <div id="viewRecovery" class="hidden-view animate-fade-in flex flex-col justify-center h-full">
+                <button onclick="switchView('viewLogin')" class="absolute top-4 left-4 text-white"><i data-lucide="arrow-left"></i></button>
+                <h2 class="text-white text-2xl font-bold text-center mb-2">Recuperar Senha</h2>
+                <p class="text-white/80 text-center text-sm mb-6">Digite seu nome completo para localizarmos seu cadastro.</p>
+                
+                <form id="recoveryForm" class="space-y-4">
+                    <div class="relative">
+                        <input type="text" id="recNome" placeholder="Nome Completo"
+                            class="w-full bg-white text-gray-700 rounded-lg py-3 px-4 outline-none focus:ring-2 focus:ring-orange-300 shadow-sm">
+                    </div>
+                    <button type="submit" class="w-full bg-white text-[#F27A23] font-bold py-3 rounded-lg shadow-lg mt-2">
+                        Enviar Código
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-xl text-white font-semibold text-sm z-50 transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none"></div>
+
     <script>
+        // Configuração da API
+        const API_BASE = 'http://localhost:3005/api';
+        const USE_MOCK = true; // Define como FALSE para usar a API real. TRUE para testar na visualização.
+
+        // Estado do Cadastro
+        let registerState = {
+            step: 0,
+            data: {}
+        };
+
+        // --- INICIALIZAÇÃO ---
         document.addEventListener('DOMContentLoaded', () => {
-            const cpfInput = document.getElementById('cpf');
-            const form = document.getElementById('loginForm');
+            lucide.createIcons();
+            checkAuth();
+            setupMasks();
 
-            // Máscara de CPF enquanto digita
-            cpfInput.addEventListener('input', (e) => {
-                let value = e.target.value.replace(/\D/g, "");
-                if (value.length > 11) value = value.slice(0, 11);
-
-                value = value.replace(/(\d{3})(\d)/, "$1.$2");
-                value = value.replace(/(\d{3})(\d)/, "$1.$2");
-                value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-                
-                e.target.value = value;
+            // Listeners
+            document.getElementById('loginForm').addEventListener('submit', handleLoginSubmit);
+            document.getElementById('recoveryForm').addEventListener('submit', handleRecoverySubmit);
+            document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') submitChat();
             });
+        });
 
-            // Validação simples no envio
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                
-                const cpf = document.getElementById('cpf').value;
-                const password = document.getElementById('password').value;
-
-                if(cpf.length < 14) {
-                    showToast("CPF incompleto", "error");
-                    return;
-                }
-                if(!password) {
-                    showToast("Digite sua senha", "error");
-                    return;
-                }
-
-                showToast("Autenticando...", "success");
+        // --- GERENCIAMENTO DE VIEWS ---
+        function switchView(viewId) {
+            ['viewLogin', 'viewLoggedIn', 'viewRegister', 'viewRecovery'].forEach(id => {
+                document.getElementById(id).classList.add('hidden-view');
             });
+            document.getElementById(viewId).classList.remove('hidden-view');
+            
+            // Ajuste de altura do card para o chat
+            const card = document.getElementById('mainCard');
+            if (viewId === 'viewRegister') {
+                card.style.height = '600px'; 
+                card.classList.remove('p-6');
+                card.classList.add('p-4');
+            } else {
+                card.style.height = 'auto';
+                card.style.minHeight = '400px';
+                card.classList.add('p-6');
+                card.classList.remove('p-4');
+            }
+        }
 
-            // Sistema de Notificação (Toast)
-            function showToast(message, type) {
-                const existingToast = document.querySelector('.custom-toast');
-                if(existingToast) existingToast.remove();
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.className = `fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-xl text-white font-semibold text-sm z-50 transition-all duration-300 ${type === 'success' ? 'bg-green-600' : 'bg-red-500'}`;
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-20px]');
+            }, 3000);
+        }
 
-                const toast = document.createElement('div');
-                toast.className = `custom-toast fixed top-10 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-2xl text-white font-bold text-sm z-50 transition-all duration-300 opacity-0 translate-y-[-20px] ${type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`;
-                toast.innerText = message;
+        // --- AUTH & LOCALSTORAGE ---
+        function checkAuth() {
+            const userData = localStorage.getItem('guardiao_user');
+            const token = localStorage.getItem('guardiao_token');
+
+            if (userData && token) {
+                const user = JSON.parse(userData);
+                document.getElementById('userAvatar').src = user.foto_perfil || 'https://via.placeholder.com/150';
+                document.getElementById('userName').innerText = user.nome_completo.split(' ')[0];
+                document.getElementById('btnUserName').innerText = user.nome_completo.split(' ')[0];
+                switchView('viewLoggedIn');
+            } else {
+                switchView('viewLogin');
+            }
+        }
+
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const cpf = document.getElementById('loginCpf').value.replace(/\D/g, '');
+            const senha = document.getElementById('loginSenha').value;
+
+            if (!cpf || !senha) return showToast('Preencha todos os campos', 'error');
+
+            showToast('Autenticando...', 'success');
+
+            try {
+                const response = await apiRequest('/auth/login', 'POST', { cpf_cnpj: cpf, senha });
                 
-                document.body.appendChild(toast);
+                if (response.sucesso) {
+                    // Salvar Token e Dados Completos
+                    localStorage.setItem('guardiao_token', response.dados.token);
+                    localStorage.setItem('guardiao_user', JSON.stringify(response.dados.usuario));
+                    
+                    showToast('Login realizado!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'facial.tokem.html';
+                    }, 1000);
+                } else {
+                    showToast(response.mensagem || 'Erro ao logar', 'error');
+                }
+            } catch (error) {
+                showToast('Erro de conexão com o servidor', 'error');
+                console.error(error);
+            }
+        }
 
-                requestAnimationFrame(() => {
-                    toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+        function handleQuickLogin() {
+            // Verifica se o token ainda é válido (simulação)
+            window.location.href = 'facial.tokem.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('guardiao_token');
+            // Mantemos o user data se quiser implementar "lembrar usuario", mas o prompt pediu trocar conta
+            localStorage.removeItem('guardiao_user');
+            document.getElementById('loginForm').reset();
+            switchView('viewLogin');
+        }
+
+        async function handleRecoverySubmit(e) {
+            e.preventDefault();
+            const nome = document.getElementById('recNome').value;
+            
+            try {
+                const response = await apiRequest('/auth/recuperar-senha', 'POST', { nome_completo: nome });
+                if(response.sucesso) {
+                    showToast('Código enviado para seu e-mail!', 'success');
+                    // Aqui você poderia redirecionar para uma tela de input do código
+                    // Para o exemplo, voltamos ao login
+                    setTimeout(() => switchView('viewLogin'), 3000);
+                } else {
+                    showToast(response.mensagem, 'error');
+                }
+            } catch (error) {
+                showToast('Erro ao solicitar recuperação', 'error');
+            }
+        }
+
+        // --- LÓGICA DO CHAT (CADASTRO) ---
+        
+        const chatFlow = [
+            { 
+                field: 'nome_completo', 
+                msg: 'Olá! Bem-vindo ao Guardião. Vamos criar sua conta. 😊\nPrimeiro, qual seu **Nome Completo**?',
+                type: 'text'
+            },
+            { 
+                field: 'tipo_acesso', 
+                msg: 'Prazer! Qual perfil melhor descreve você?', 
+                type: 'options',
+                options: [
+                    { label: '👴 Idoso e Família', value: 'usuario' },
+                    { label: '🩺 Babá e Cuidador', value: 'prestador' }
+                ]
+            },
+            { 
+                field: 'cpf_cnpj', 
+                msg: 'Certo! Agora preciso do seu **CPF** (apenas números).', 
+                type: 'text',
+                mask: 'cpf'
+            },
+            { 
+                field: 'email', 
+                msg: 'Qual seu melhor **E-mail** para contato?', 
+                type: 'text',
+                validate: (val) => val.includes('@') && val.includes('.')
+            },
+            { 
+                field: 'celular', 
+                msg: 'E seu número de **Celular** com DDD?', 
+                type: 'text',
+                mask: 'phone'
+            },
+            { 
+                field: 'sexo', 
+                msg: 'Qual seu gênero?', 
+                type: 'options',
+                options: [
+                    { label: 'Masculino', value: 'Masculino' },
+                    { label: 'Feminino', value: 'Feminino' },
+                    { label: 'Outro', value: 'Outro' }
+                ]
+            },
+            { 
+                field: 'cep', 
+                msg: 'Para localizarmos serviços próximos, qual seu **CEP**?', 
+                type: 'text',
+                mask: 'cep'
+            },
+            // Endereço seria preenchido automaticamente pelo CEP na lógica real, aqui vamos pular para senha para simplificar
+            { 
+                field: 'senha', 
+                msg: 'Crie uma **Senha** segura (mínimo 6 caracteres).', 
+                type: 'password'
+            },
+            { 
+                field: 'foto_base64', 
+                msg: 'Estamos quase lá! Adicione uma **Foto de Perfil** para te identificarmos.', 
+                type: 'upload'
+            },
+            { 
+                field: 'termos', 
+                msg: 'Por fim, você concorda com nossos Termos de Uso?\n<a href="pdf.termo.pdf" target="_blank" class="underline text-blue-600">Ler Termos (PDF)</a>', 
+                type: 'options',
+                options: [
+                    { label: '✅ Li e Concordo', value: 'true' }
+                ]
+            }
+        ];
+
+        function startRegistration() {
+            registerState = { step: 0, data: {} };
+            document.getElementById('chatMessages').innerHTML = '';
+            switchView('viewRegister');
+            addBotMessage(chatFlow[0].msg);
+            setupInput(chatFlow[0]);
+        }
+
+        function cancelRegistration() {
+            switchView('viewLogin');
+        }
+
+        function addBotMessage(text) {
+            const div = document.createElement('div');
+            div.className = 'chat-bubble chat-bot';
+            div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            document.getElementById('chatMessages').appendChild(div);
+            scrollToBottom();
+        }
+
+        function addUserMessage(text) {
+            const div = document.createElement('div');
+            div.className = 'chat-bubble chat-user';
+            div.innerText = text;
+            document.getElementById('chatMessages').appendChild(div);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatMessages');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function setupInput(stepConfig) {
+            const textInputDiv = document.getElementById('inputAreaText');
+            const optionsDiv = document.getElementById('inputAreaOptions');
+            const uploadDiv = document.getElementById('inputAreaUpload');
+            const inputField = document.getElementById('chatInput');
+
+            // Reset
+            textInputDiv.classList.add('hidden');
+            optionsDiv.classList.add('hidden');
+            uploadDiv.classList.add('hidden');
+            optionsDiv.innerHTML = '';
+            inputField.value = '';
+            inputField.type = stepConfig.type === 'password' ? 'password' : 'text';
+
+            if (stepConfig.type === 'text' || stepConfig.type === 'password') {
+                textInputDiv.classList.remove('hidden');
+                inputField.focus();
+                
+                // Aplica mascara se houver
+                if(stepConfig.mask === 'cpf') setupCpfMask(inputField);
+                if(stepConfig.mask === 'phone') setupPhoneMask(inputField);
+                if(stepConfig.mask === 'cep') setupCepMask(inputField);
+
+            } else if (stepConfig.type === 'options') {
+                optionsDiv.classList.remove('hidden');
+                stepConfig.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'bg-white text-[#F27A23] border border-[#F27A23] hover:bg-orange-50 font-semibold py-2 px-4 rounded-full text-sm shadow-sm transition-all mb-1';
+                    btn.innerText = opt.label;
+                    btn.onclick = () => processStep(opt.value, opt.label);
+                    optionsDiv.appendChild(btn);
                 });
 
-                setTimeout(() => {
-                    toast.classList.add('opacity-0', 'translate-y-[-20px]');
-                    setTimeout(() => toast.remove(), 300);
-                }, 3000);
+            } else if (stepConfig.type === 'upload') {
+                uploadDiv.classList.remove('hidden');
             }
-        });
+        }
+
+        function submitChat() {
+            const input = document.getElementById('chatInput');
+            const val = input.value.trim();
+            if (!val) return;
+            processStep(val, val);
+        }
+
+        function handlePhotoUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64 = e.target.result;
+                    // Mostra preview no chat
+                    const imgPreview = `<img src="${base64}" class="w-24 h-24 rounded-full border-2 border-white shadow-md inline-block">`;
+                    addUserMessage('📸 Foto enviada');
+                    document.getElementById('chatMessages').lastChild.innerHTML += `<br>${imgPreview}`;
+                    
+                    // Processa
+                    processStep(base64, 'Foto enviada', true);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function processStep(value, displayValue, skipUserMsg = false) {
+            const currentStepConfig = chatFlow[registerState.step];
+
+            // Validação
+            if (currentStepConfig.validate && !currentStepConfig.validate(value)) {
+                addBotMessage('⚠️ Parece que isso não é válido. Tente novamente.');
+                return;
+            }
+            if (currentStepConfig.field === 'cpf_cnpj' && value.replace(/\D/g, '').length < 11) {
+                addBotMessage('⚠️ CPF muito curto.');
+                return;
+            }
+
+            // Exibir resposta do usuário
+            if (!skipUserMsg) addUserMessage(displayValue);
+
+            // Salvar dado
+            registerState.data[currentStepConfig.field] = value;
+
+            // Avançar
+            registerState.step++;
+
+            if (registerState.step < chatFlow.length) {
+                // Próxima pergunta
+                setTimeout(() => {
+                    addBotMessage(chatFlow[registerState.step].msg);
+                    setupInput(chatFlow[registerState.step]);
+                }, 600);
+            } else {
+                // FIM DO FLUXO - ENVIAR PARA API
+                addBotMessage('✨ Perfeito! Criando sua conta...');
+                finishRegistration();
+            }
+        }
+
+        async function finishRegistration() {
+            // Completar dados faltantes para a API (Mock de endereço)
+            const finalData = {
+                ...registerState.data,
+                rua: "Rua Exemplo",
+                cidade: "São Paulo",
+                estado: "SP",
+                bairro: "Centro",
+                latitude: 0,
+                longitude: 0
+            };
+
+            // Remover formatação de CPF e Celular
+            finalData.cpf_cnpj = finalData.cpf_cnpj.replace(/\D/g, '');
+            finalData.celular = finalData.celular.replace(/\D/g, '');
+
+            try {
+                const response = await apiRequest('/auth/register', 'POST', finalData);
+                
+                if (response.sucesso) {
+                    addBotMessage('🎉 Conta criada com sucesso! Redirecionando...');
+                    
+                    // Auto-login
+                    localStorage.setItem('guardiao_token', response.dados.token);
+                    localStorage.setItem('guardiao_user', JSON.stringify(response.dados.usuario));
+                    
+                    setTimeout(() => {
+                        window.location.href = 'facial.tokem.html';
+                    }, 2000);
+                } else {
+                    addBotMessage(`❌ Ops: ${response.mensagem}`);
+                    setTimeout(() => {
+                        cancelRegistration();
+                    }, 3000);
+                }
+            } catch (err) {
+                addBotMessage('❌ Erro de conexão.');
+            }
+        }
+
+        // --- API & UTILS ---
+
+        // Função para simular ou chamar API
+        async function apiRequest(endpoint, method, body) {
+            if (USE_MOCK) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        console.log(`[MOCK API] ${method} ${endpoint}`, body);
+                        
+                        // Mock Login
+                        if (endpoint === '/auth/login') {
+                            if (body.cpf_cnpj === '00000000000') return resolve({ sucesso: false, mensagem: 'CPF inválido' });
+                            resolve({
+                                sucesso: true,
+                                mensagem: "Login realizado com sucesso",
+                                dados: {
+                                    usuario: {
+                                        id: 1,
+                                        nome_completo: "Maria da Silva",
+                                        email: "maria@teste.com",
+                                        foto_perfil: "https://i.pravatar.cc/300?img=5" // Foto mock
+                                    },
+                                    token: "mock_token_jwt_12345"
+                                }
+                            });
+                        }
+                        
+                        // Mock Register
+                        if (endpoint === '/auth/register') {
+                            resolve({
+                                sucesso: true,
+                                mensagem: "Usuário cadastrado com sucesso",
+                                dados: {
+                                    usuario: { ...body, id: 2, foto_perfil: body.foto_base64 },
+                                    token: "mock_token_jwt_new_user"
+                                }
+                            });
+                        }
+
+                        // Mock Recovery
+                        if (endpoint === '/auth/recuperar-senha') {
+                            resolve({ sucesso: true, mensagem: "Token gerado" });
+                        }
+
+                    }, 1500);
+                });
+            } else {
+                // Implementação Real
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    return await res.json();
+                } catch (error) {
+                    throw error;
+                }
+            }
+        }
+
+        // Máscaras Input
+        function setupMasks() {
+            const cpfLogin = document.getElementById('loginCpf');
+            setupCpfMask(cpfLogin);
+        }
+
+        function setupCpfMask(input) {
+            input.oninput = (e) => {
+                let v = e.target.value.replace(/\D/g, "");
+                if (v.length > 14) v = v.slice(0, 14); // Aceita CNPJ tb
+                if (v.length > 11) {
+                     v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+                } else {
+                    v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                    v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                    v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                }
+                e.target.value = v;
+            };
+        }
+        
+        function setupPhoneMask(input) {
+            input.oninput = (e) => {
+                let v = e.target.value.replace(/\D/g, "");
+                v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+                v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+                e.target.value = v;
+            }
+        }
+
+        function setupCepMask(input) {
+            input.oninput = (e) => {
+                let v = e.target.value.replace(/\D/g, "").slice(0, 8);
+                v = v.replace(/^(\d{5})(\d)/, "$1-$2");
+                e.target.value = v;
+            }
+        }
+
     </script>
 </body>
 </html>
