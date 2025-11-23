@@ -8,10 +8,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Fonte Montserrat -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-    <!-- Ícones (Lucide) - Carregamento com defer para não bloquear -->
+    <!-- Ícones (Lucide) - Carregamento com defer -->
     <script src="https://unpkg.com/lucide@latest" defer></script>
     
-    <!-- Carrega a configuração da base da API (Opcional, pois temos fallback no código) -->
+    <!-- Carrega a configuração da base da API -->
     <script src="apisistema.js"></script>
 
     <style>
@@ -80,8 +80,7 @@
                     <p class="text-gray-500 text-sm mt-1">Acesse sua conta para continuar</p>
                 </div>
                 
-                <!-- Adicionado onsubmit="return false" como salvaguarda extra contra reload -->
-                <form id="loginForm" class="space-y-5" novalidate>
+                <form id="loginForm" class="space-y-5" novalidate onsubmit="return false;">
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="user" class="text-gray-400 w-5 h-5"></i></div>
                         <input type="text" id="loginCpf" name="loginCpf" placeholder="CPF ou CNPJ" maxlength="18" autocomplete="username" class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-orange-400 outline-none transition-all font-medium">
@@ -138,15 +137,29 @@
             <!-- VIEW 4: RECOVERY -->
             <div id="viewRecovery" class="hidden-view animate-fade-in flex flex-col justify-center p-8 h-full bg-white">
                 <button onclick="switchView('viewLogin')" class="absolute top-6 left-6 text-gray-400 hover:text-gray-600"><i data-lucide="arrow-left"></i></button>
-                <div class="text-center mb-6 mt-4">
-                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 text-[#F27A23]"><i data-lucide="key-round" class="w-8 h-8"></i></div>
-                    <h2 class="text-gray-800 text-2xl font-bold">Recuperar Senha</h2>
-                    <p class="text-gray-500 text-sm mt-2 px-4">Informe seu nome completo para buscarmos seu cadastro.</p>
+                
+                <!-- Conteúdo do Formulário -->
+                <div id="recoveryContent">
+                    <div class="text-center mb-6 mt-4">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 text-[#F27A23]"><i data-lucide="key-round" class="w-8 h-8"></i></div>
+                        <h2 class="text-gray-800 text-2xl font-bold">Recuperar Senha</h2>
+                        <p class="text-gray-500 text-sm mt-2 px-4">Informe seu nome completo para buscarmos seu cadastro.</p>
+                    </div>
+                    <form id="recoveryForm" class="space-y-4">
+                        <div class="relative"><input type="text" id="recNome" placeholder="Nome Completo" class="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-orange-300 outline-none transition-all text-gray-800 font-medium"></div>
+                        <button type="submit" class="w-full bg-[#F27A23] text-white font-bold py-3.5 rounded-xl shadow-lg mt-2 hover:bg-orange-600 transition-all">Enviar Código</button>
+                    </form>
                 </div>
-                <form id="recoveryForm" class="space-y-4">
-                    <div class="relative"><input type="text" id="recNome" placeholder="Nome Completo" class="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-orange-300 outline-none transition-all text-gray-800 font-medium"></div>
-                    <button type="submit" class="w-full bg-[#F27A23] text-white font-bold py-3.5 rounded-xl shadow-lg mt-2 hover:bg-orange-600 transition-all">Enviar Código</button>
-                </form>
+
+                <!-- Conteúdo de Sucesso (Oculto inicialmente) -->
+                <div id="recoverySuccess" class="hidden text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+                        <i data-lucide="mail-check" class="w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-gray-800 text-2xl font-bold mb-2">Verifique seu E-mail</h2>
+                    <p class="text-gray-500 text-sm mb-6">Enviamos um código de recuperação para o e-mail cadastrado.</p>
+                    <button onclick="switchView('viewLogin')" class="w-full bg-[#F27A23] text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-orange-600 transition-all">Voltar ao Login</button>
+                </div>
             </div>
         </div>
     </div>
@@ -154,13 +167,46 @@
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-2xl text-white font-semibold text-sm z-50 transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none flex items-center gap-2"></div>
 
     <script>
-        // --- API HELPERS (Blindado contra falha de carregamento) ---
+        // --- FUNÇÕES DE MÁSCARA (Definidas no topo) ---
+        function setupMasks() { 
+            const i = document.getElementById('loginCpf'); 
+            if(i) setupCpfMask(i); 
+        }
+
+        function setupCpfMask(i) { 
+            i.oninput = e => { 
+                let v = e.target.value.replace(/\D/g,''); 
+                if(v.length > 11) 
+                    v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,"$1.$2.$3/$4-$5"); 
+                else 
+                    v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.$2.$3-$4"); 
+                e.target.value = v; 
+            } 
+        }
+        
+        function setupPhoneMask(i) { 
+            i.oninput = e => { 
+                let v = e.target.value.replace(/\D/g,''); 
+                v = v.replace(/^(\d{2})(\d{5})(\d{4})/,"($1) $2-$3"); 
+                e.target.value = v; 
+            } 
+        }
+        
+        function setupCepMask(i) { 
+            i.oninput = e => { 
+                let v = e.target.value.replace(/\D/g,''); 
+                v = v.replace(/^(\d{5})(\d{3})/,"$1-$2"); 
+                e.target.value = v; 
+            } 
+        }
+
+        // --- API HELPERS (SEM MOCK) ---
         async function apiRequest(endpoint, method = 'GET', body = null) {
-            // URL FIXA DE FALLBACK GARANTIDA
+            // Usa a variável global definida em apisistema.js
+            // Se apisistema.js não carregar, usa fallback
             const fallbackUrl = "https://3005-ifjg6cargn3icag87vhwr-6eb715a0.manusvm.computer/api";
-            
-            // Tenta usar variável global (apisistema.js), senão usa o fallback
             const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : fallbackUrl;
+            
             const url = `${baseUrl}${endpoint}`;
             
             const headers = { 'Content-Type': 'application/json' };
@@ -171,62 +217,39 @@
             if (body) options.body = JSON.stringify(body);
             
             try {
+                console.log(`[API] Requisitando: ${method} ${url}`);
                 const response = await fetch(url, options);
                 const data = await response.json();
                 
                 if (!response.ok) {
+                    // Lança erro com mensagem do backend
                     throw new Error(data.message || data.mensagem || `Erro ${response.status}`);
                 }
                 
-                return data;
+                return data; // Sucesso real da API
             } catch (error) {
-                console.warn(`[API] Erro ao conectar em ${url}:`, error);
-                // Retorna mock apenas se falhar conexão real
-                return mockLocalResponse(endpoint, body);
+                console.error(`[API] Erro ao conectar em ${url}:`, error);
+                // Retorna objeto de erro para a UI tratar, SEM MOCK
+                return { success: false, message: error.message || 'Erro de conexão com o servidor.' };
             }
-        }
-
-        function mockLocalResponse(endpoint, body) {
-            return new Promise(resolve => {
-                setTimeout(() => {
-                    if (endpoint === '/auth/login') {
-                        // Mock de Login
-                        if (body.cpf_cnpj === '00000000000') {
-                            resolve({ success: false, message: 'Credenciais inválidas' });
-                        } else {
-                            const mockBase64 = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRjI3QTIzIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSI4IiByPSI1Ii8+PHBhdGggZD0iTTMgMjFhOSA5IDAgMCAxIDktOWg0YTkgOSAwIDAgMSA5IDl2MSIvPjwvc3ZnPg==";
-                            resolve({ 
-                                success: true, 
-                                message: "Login realizado com sucesso",
-                                data: { token: 'mock_token', usuario: { id: 1, nome_completo: 'Usuário Teste', email: 'teste@email.com', foto_perfil: mockBase64 } } 
-                            });
-                        }
-                    } else if (endpoint === '/auth/register') {
-                        resolve({ success: true, message: "Sucesso", data: { token: 'mock_new', usuario: { ...body } } });
-                    } else {
-                        resolve({ success: true, message: 'Sucesso' });
-                    }
-                }, 800);
-            });
         }
 
         // --- APP LOGIC ---
         let registerState = { step: 0, data: {} };
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Inicialização Segura do Lucide
-            try { if (window.lucide) window.lucide.createIcons(); } catch(e) { console.warn("Ícones falharam no load"); }
+            try { if (window.lucide) window.lucide.createIcons(); } catch(e) {}
             
-            // Inicialização Segura das Máscaras e Auth
-            try {
-                checkAuth();
-                setupMasks();
-            } catch(e) { console.error("Erro na inicialização", e); }
+            // Verifica Auth Inicial
+            checkAuth();
+            
+            // Configura máscaras (funciona pois setupMasks está definida acima)
+            setupMasks(); 
 
-            // Listener de Login - PROTEGER CONTRA DUPLICAÇÃO E ERROS
+            // Listener Login
             const form = document.getElementById('loginForm');
             if(form) {
-                // Remove listener anterior se houver (boa prática em SPAs)
+                // Remove listener duplicado para garantir
                 form.removeEventListener('submit', handleLoginSubmit);
                 form.addEventListener('submit', handleLoginSubmit);
             }
@@ -243,15 +266,16 @@
             const target = document.getElementById(viewId);
             if(target) target.classList.remove('hidden-view');
             
-            const card = document.getElementById('mainCard');
-            if (viewId === 'viewRegister') { 
-                card.style.height = '600px'; 
-                card.classList.remove('bg-white/95'); 
-                card.classList.add('bg-white'); 
-            } else { 
-                card.style.height = 'auto'; 
-                card.classList.add('bg-white/95'); 
+            // Reset visual Recovery
+            if(viewId === 'viewRecovery') {
+                document.getElementById('recoveryContent').classList.remove('hidden');
+                document.getElementById('recoverySuccess').classList.add('hidden');
+                document.getElementById('recoveryForm').reset();
             }
+
+            const card = document.getElementById('mainCard');
+            if (viewId === 'viewRegister') { card.style.height = '600px'; card.classList.remove('bg-white/95'); card.classList.add('bg-white'); }
+            else { card.style.height = 'auto'; card.classList.add('bg-white/95'); }
         }
 
         function showToast(msg, type = 'success') {
@@ -283,84 +307,67 @@
             } else { switchView('viewLogin'); }
         }
 
-        // --- CORREÇÃO PRINCIPAL: LOGIN HANDLER ROBUSTO ---
         async function handleLoginSubmit(e) {
-            // 1. IMPEDE O RELOAD IMEDIATAMENTE
-            e.preventDefault();
-            e.stopPropagation();
-
-            try {
-                const cpfInput = document.getElementById('loginCpf');
-                const senhaInput = document.getElementById('loginSenha');
-                const btn = document.getElementById('btnLogin');
-
-                const c = cpfInput.value.replace(/\D/g, '');
-                const s = senhaInput.value;
-
-                if (!c || !s) return showToast('Preencha CPF e Senha', 'error');
-
-                // Feedback Visual
-                const originalText = btn.innerText;
-                btn.innerText = 'Autenticando...';
-                btn.disabled = true;
-
-                // Chamada API
-                const res = await apiRequest('/auth/login', 'POST', { cpf_cnpj: c, senha: s });
-
-                // Restaura Botão
-                btn.innerText = originalText;
-                btn.disabled = false;
-
-                if (res.success) {
-                    localStorage.setItem('guardiao_token', res.data.token);
-                    localStorage.setItem('guardiao_user', JSON.stringify(res.data.usuario));
-                    showToast('Login realizado com sucesso!', 'success');
-                    
-                    // Pequeno delay para UX antes de mudar a tela
-                    setTimeout(() => checkAuth(), 500);
-                } else {
-                    showToast(res.message || 'Dados incorretos', 'error');
-                }
-            } catch (error) {
-                console.error("Erro fatal no login:", error);
-                showToast("Erro interno no aplicativo", 'error');
-                // Garante que o botão seja liberado em caso de erro de script
-                const btn = document.getElementById('btnLogin');
-                if(btn) { btn.innerText = 'Entrar'; btn.disabled = false; }
-            }
+            e.preventDefault(); e.stopPropagation();
             
-            return false; // Retorno extra para impedir submit antigo
+            const cpfInput = document.getElementById('loginCpf');
+            const senhaInput = document.getElementById('loginSenha');
+            const btn = document.getElementById('btnLogin');
+
+            const c = cpfInput.value.replace(/\D/g, '');
+            const s = senhaInput.value;
+
+            if (!c || !s) return showToast('Preencha CPF e Senha', 'error');
+
+            const originalText = btn.innerText; 
+            btn.innerText = 'Autenticando...'; 
+            btn.disabled = true;
+
+            const res = await apiRequest('/auth/login', 'POST', { cpf_cnpj: c, senha: s });
+
+            btn.innerText = originalText; 
+            btn.disabled = false;
+
+            // Verifica sucesso real da API (success: true)
+            if (res.success) {
+                localStorage.setItem('guardiao_token', res.data.token);
+                localStorage.setItem('guardiao_user', JSON.stringify(res.data.usuario));
+                showToast(res.message || 'Login realizado!', 'success');
+                setTimeout(() => checkAuth(), 500);
+            } else {
+                // Mostra erro real da API
+                showToast(res.message || 'Dados incorretos', 'error');
+            }
+            return false;
         }
 
         function handleQuickLogin() { window.location.href = 'facial.tokem.html'; }
-        
-        function logout() { 
-            localStorage.removeItem('guardiao_token');
-            localStorage.removeItem('guardiao_user');
-            document.getElementById('loginForm').reset(); 
-            switchView('viewLogin'); 
-        }
+        function logout() { localStorage.clear(); document.getElementById('loginForm').reset(); switchView('viewLogin'); }
 
         async function handleRecoverySubmit(e) {
-            e.preventDefault(); const n = document.getElementById('recNome').value; if(!n) return;
+            e.preventDefault(); 
+            const n = document.getElementById('recNome').value; 
+            if(!n) return showToast('Digite seu nome', 'error');
+            
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText; btn.innerText = 'Enviando...'; btn.disabled = true;
+
             const res = await apiRequest('/auth/recuperar-senha', 'POST', { nome_completo: n });
-            if(res.success) { showToast('Código enviado!', 'success'); setTimeout(() => switchView('viewLogin'), 3000); }
-            else showToast(res.message || 'Não encontrado', 'error');
+            
+            btn.innerText = originalText; btn.disabled = false;
+
+            if(res.success) { 
+                showToast('Código enviado!', 'success');
+                document.getElementById('recoveryContent').classList.add('hidden');
+                document.getElementById('recoverySuccess').classList.remove('hidden');
+                lucide.createIcons();
+            } else { 
+                showToast(res.message || 'Usuário não encontrado', 'error'); 
+            }
         }
 
         // --- CHAT LOGIC ---
-        const chatFlow = [
-            { field: 'nome_completo', msg: 'Olá! Sou o assistente do Guardião. Vamos configurar sua conta. 😊<br>Primeiro, como devo te chamar? (<b>Nome Completo</b>)', type: 'text' },
-            { field: 'tipo_acesso', msg: 'Qual perfil de acesso você precisa?', type: 'options', options: [{label: '🧑‍🧑 Familiar', value:'familiar'}, {label: '👴 Idoso', value:'idoso'}, {label: '🩺 Cuidador', value:'cuidador'}, {label: '🏥 Profissional', value:'saude'}] },
-            { field: 'cpf_cnpj', msg: 'Digite seu <b>CPF</b>.', type: 'text', mask: 'cpf' },
-            { field: 'email', msg: 'Seu <b>E-mail</b>?', type: 'text', validate: v=>v.includes('@') },
-            { field: 'celular', msg: 'Seu <b>WhatsApp</b>?', type: 'text', mask: 'phone' },
-            { field: 'sexo', msg: 'Gênero?', type: 'options', options: [{label:'Masculino', value:'Masculino'}, {label:'Feminino', value:'Feminino'}, {label:'Outro', value:'Outro'}] },
-            { field: 'cep', msg: 'Informe seu <b>CEP</b>.', type: 'text', mask: 'cep' },
-            { field: 'senha', msg: 'Crie uma <b>Senha</b> (min 6 dígitos).', type: 'password' },
-            { field: 'foto_base64', msg: 'Sua <b>Foto de Perfil</b> 📸', type: 'upload' },
-            { field: 'termos', msg: 'Aceita os <a href="pdf.termo.pdf" class="text-orange-600 font-bold underline">Termos de Uso</a>?', type: 'options', options: [{label:'✅ Aceito', value:'true'}] }
-        ];
+        const chatFlow = [{ field: 'nome_completo', msg: 'Olá! Sou o assistente do Guardião. Vamos configurar sua conta. 😊<br>Primeiro, como devo te chamar? (<b>Nome Completo</b>)', type: 'text' },{ field: 'tipo_acesso', msg: 'Qual perfil de acesso você precisa?', type: 'options', options: [{label: '🧑‍🧑 Familiar', value:'familiar'}, {label: '👴 Idoso', value:'idoso'}, {label: '🩺 Cuidador', value:'cuidador'}, {label: '🏥 Profissional', value:'saude'}] },{ field: 'cpf_cnpj', msg: 'Digite seu <b>CPF</b>.', type: 'text', mask: 'cpf' },{ field: 'email', msg: 'Seu <b>E-mail</b>?', type: 'text', validate: v=>v.includes('@') },{ field: 'celular', msg: 'Seu <b>WhatsApp</b>?', type: 'text', mask: 'phone' },{ field: 'sexo', msg: 'Gênero?', type: 'options', options: [{label:'Masculino', value:'Masculino'}, {label:'Feminino', value:'Feminino'}, {label:'Outro', value:'Outro'}] },{ field: 'cep', msg: 'Informe seu <b>CEP</b>.', type: 'text', mask: 'cep' },{ field: 'senha', msg: 'Crie uma <b>Senha</b> (min 6 dígitos).', type: 'password' },{ field: 'foto_base64', msg: 'Sua <b>Foto de Perfil</b> 📸', type: 'upload' },{ field: 'termos', msg: 'Aceita os <a href="pdf.termo.pdf" class="text-orange-600 font-bold underline">Termos de Uso</a>?', type: 'options', options: [{label:'✅ Aceito', value:'true'}] }];
 
         function startRegistration() { registerState = {step:0, data:{}}; document.getElementById('chatMessages').innerHTML=''; switchView('viewRegister'); addBotMsg(chatFlow[0].msg); setupInput(chatFlow[0]); }
         function cancelRegistration() { switchView('viewLogin'); }
@@ -370,18 +377,12 @@
 
         function setupInput(cfg) {
             const txt=document.getElementById('inputAreaText'), opt=document.getElementById('inputAreaOptions'), upl=document.getElementById('inputAreaUpload'), inp=document.getElementById('chatInput');
-            txt.classList.add('hidden'); opt.classList.add('hidden'); upl.classList.add('hidden'); opt.innerHTML=''; inp.value=''; inp.type=cfg.type==='password'?'password':'text';
-            inp.oninput = null;
-
+            txt.classList.add('hidden'); opt.classList.add('hidden'); upl.classList.add('hidden'); opt.innerHTML=''; inp.value=''; inp.type=cfg.type==='password'?'password':'text'; inp.oninput = null;
             if(cfg.type==='text'||cfg.type==='password') {
                 txt.classList.remove('hidden'); inp.focus();
                 if(cfg.mask==='cpf') setupCpfMask(inp); if(cfg.mask==='phone') setupPhoneMask(inp); if(cfg.mask==='cep') setupCepMask(inp);
             } else if(cfg.type==='options') {
-                opt.classList.remove('hidden');
-                cfg.options.forEach(o => { 
-                    const b=document.createElement('button'); b.className='w-full bg-white border border-gray-200 text-gray-700 hover:bg-orange-50 hover:border-orange-300 font-semibold py-3 px-4 rounded-xl text-left shadow-sm mb-2 flex justify-between';
-                    b.innerHTML=`<span>${o.label}</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>`; b.onclick=()=>processStep(o.value, o.label); opt.appendChild(b); 
-                });
+                opt.classList.remove('hidden'); cfg.options.forEach(o => { const b=document.createElement('button'); b.className='w-full bg-white border border-gray-200 text-gray-700 hover:bg-orange-50 hover:border-orange-300 font-semibold py-3 px-4 rounded-xl text-left shadow-sm mb-2 flex justify-between'; b.innerHTML=`<span>${o.label}</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>`; b.onclick=()=>processStep(o.value, o.label); opt.appendChild(b); });
             } else if(cfg.type==='upload') { upl.classList.remove('hidden'); }
         }
 
@@ -392,26 +393,17 @@
             const cfg = chatFlow[registerState.step];
             if(cfg.validate && !cfg.validate(val)) return addBotMsg('⚠️ Inválido. Tente novamente.');
             if(cfg.field==='cpf_cnpj' && val.replace(/\D/g,'').length<11) return addBotMsg('⚠️ CPF inválido.');
-
             if(cfg.field === 'cep') {
-                const cep = val.replace(/\D/g, '');
-                if(cep.length !== 8) return addBotMsg('⚠️ CEP deve ter 8 números.');
-                if(!skip) addUserMsg(display);
-                addBotMsg('🔍 Buscando endereço...');
+                const cep = val.replace(/\D/g, ''); if(cep.length !== 8) return addBotMsg('⚠️ CEP deve ter 8 números.');
+                if(!skip) addUserMsg(display); addBotMsg('🔍 Buscando endereço...');
                 try {
-                    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-                    const addr = await r.json();
+                    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`); const addr = await r.json();
                     if(addr.erro) { addBotMsg('⚠️ CEP não encontrado.'); return; }
-                    registerState.data.rua = addr.logradouro; registerState.data.bairro = addr.bairro;
-                    registerState.data.cidade = addr.localidade; registerState.data.estado = addr.uf;
+                    registerState.data.rua = addr.logradouro; registerState.data.bairro = addr.bairro; registerState.data.cidade = addr.localidade; registerState.data.estado = addr.uf;
                     addBotMsg(`✅ Endereço: ${addr.logradouro}, ${addr.bairro} - ${addr.localidade}/${addr.uf}`);
                 } catch(e) { addBotMsg('⚠️ Erro no CEP. Seguindo...'); }
-            } else {
-                if(!skip) addUserMsg(display);
-            }
-
-            registerState.data[cfg.field] = val;
-            registerState.step++;
+            } else { if(!skip) addUserMsg(display); }
+            registerState.data[cfg.field] = val; registerState.step++;
             if(registerState.step < chatFlow.length) { setTimeout(()=> { addBotMsg(chatFlow[registerState.step].msg); setupInput(chatFlow[registerState.step]); }, 600); }
             else { addBotMsg('Criando conta...'); finishReg(); }
         }
@@ -420,24 +412,9 @@
             const d = { rua:'-', cidade:'-', estado:'UF', bairro:'-', latitude:0, longitude:0, ...registerState.data };
             d.cpf_cnpj=d.cpf_cnpj.replace(/\D/g,''); d.celular=d.celular.replace(/\D/g,'');
             const res = await apiRequest('/auth/register', 'POST', d);
-            if(res.success) { 
-                addBotMsg('🎉 Sucesso! Entrando...'); 
-                localStorage.setItem('guardiao_token', res.data.token);
-                localStorage.setItem('guardiao_user', JSON.stringify(res.data.usuario));
-                setTimeout(()=>window.location.href='facial.tokem.html', 2000);
-            } else { 
-                addBotMsg('❌ Erro: ' + (res.message || res.mensagem)); 
-                setTimeout(() => { addBotMsg('Reiniciando...'); setTimeout(startRegistration, 2000); }, 3000);
-            }
+            if(res.success) { addBotMsg('🎉 Sucesso! Entrando...'); localStorage.setItem('guardiao_token', res.data.token); localStorage.setItem('guardiao_user', JSON.stringify(res.data.usuario)); setTimeout(()=>window.location.href='facial.tokem.html', 2000); }
+            else { addBotMsg('❌ Erro: ' + (res.message || res.mensagem)); setTimeout(() => { addBotMsg('Reiniciando...'); setTimeout(startRegistration, 2000); }, 3000); }
         }
-
-        function setupMasks() { 
-            const i=document.getElementById('loginCpf'); 
-            if(i) setupCpfMask(i); 
-        }
-        function setupCpfMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); if(v.length>11) v=v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,"$1.$2.$3/$4-$5"); else v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.$2.$3-$4"); e.target.value=v; } }
-        function setupPhoneMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); v=v.replace(/^(\d{2})(\d{5})(\d{4})/,"($1) $2-$3"); e.target.value=v; } }
-        function setupCepMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); v=v.replace(/^(\d{5})(\d{3})/,"$1-$2"); e.target.value=v; } }
     </script>
 </body>
 </html>
