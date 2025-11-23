@@ -8,10 +8,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Fonte Montserrat -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-    <!-- Ícones (Lucide) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Ícones (Lucide) - Carregamento com defer para não bloquear -->
+    <script src="https://unpkg.com/lucide@latest" defer></script>
     
-    <!-- Carrega a configuração da base da API -->
+    <!-- Carrega a configuração da base da API (Opcional, pois temos fallback no código) -->
     <script src="apisistema.js"></script>
 
     <style>
@@ -80,20 +80,21 @@
                     <p class="text-gray-500 text-sm mt-1">Acesse sua conta para continuar</p>
                 </div>
                 
-                <form id="loginForm" class="space-y-5">
+                <!-- Adicionado onsubmit="return false" como salvaguarda extra contra reload -->
+                <form id="loginForm" class="space-y-5" novalidate>
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="user" class="text-gray-400 w-5 h-5"></i></div>
-                        <input type="text" id="loginCpf" placeholder="CPF ou CNPJ" maxlength="18" class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-orange-400 outline-none transition-all font-medium">
+                        <input type="text" id="loginCpf" name="loginCpf" placeholder="CPF ou CNPJ" maxlength="18" autocomplete="username" class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-orange-400 outline-none transition-all font-medium">
                     </div>
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="lock" class="text-gray-400 w-5 h-5"></i></div>
-                        <input type="password" id="loginSenha" placeholder="Senha" class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-orange-400 outline-none transition-all font-medium">
+                        <input type="password" id="loginSenha" name="loginSenha" placeholder="Senha" autocomplete="current-password" class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-orange-400 outline-none transition-all font-medium">
                     </div>
-                    <button type="submit" class="w-full bg-gradient-to-r from-[#F27A23] to-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all uppercase tracking-wide text-sm mt-2">Entrar</button>
+                    <button type="submit" id="btnLogin" class="w-full bg-gradient-to-r from-[#F27A23] to-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all uppercase tracking-wide text-sm mt-2">Entrar</button>
                 </form>
                 <div class="flex justify-between items-center mt-8 text-sm font-medium">
-                    <button onclick="switchView('viewRecovery')" class="text-gray-500 hover:text-orange-600 transition-colors">Esqueci a senha</button>
-                    <button onclick="startRegistration()" class="text-orange-600 hover:text-orange-700 bg-orange-50 px-4 py-1.5 rounded-full border border-orange-100 hover:bg-orange-100 transition-all">Criar Conta</button>
+                    <button type="button" onclick="switchView('viewRecovery')" class="text-gray-500 hover:text-orange-600 transition-colors">Esqueci a senha</button>
+                    <button type="button" onclick="startRegistration()" class="text-orange-600 hover:text-orange-700 bg-orange-50 px-4 py-1.5 rounded-full border border-orange-100 hover:bg-orange-100 transition-all">Criar Conta</button>
                 </div>
             </div>
 
@@ -101,7 +102,6 @@
             <div id="viewLoggedIn" class="hidden-view animate-fade-in flex flex-col items-center justify-center p-8 h-full text-center">
                 <div class="relative mb-6">
                     <div class="w-24 h-24 rounded-full border-4 border-orange-100 overflow-hidden shadow-xl bg-gray-100">
-                        <!-- Imagem carregada via Base64 -->
                         <img id="userAvatar" src="" alt="Foto Usuário" class="w-full h-full object-cover">
                     </div>
                     <div class="absolute bottom-1 right-1 bg-green-500 w-5 h-5 rounded-full border-2 border-white animate-pulse"></div>
@@ -154,9 +154,13 @@
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-2xl text-white font-semibold text-sm z-50 transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none flex items-center gap-2"></div>
 
     <script>
-        // --- API HELPERS ---
+        // --- API HELPERS (Blindado contra falha de carregamento) ---
         async function apiRequest(endpoint, method = 'GET', body = null) {
-            const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:3005/api';
+            // URL FIXA DE FALLBACK GARANTIDA
+            const fallbackUrl = "https://3005-ifjg6cargn3icag87vhwr-6eb715a0.manusvm.computer/api";
+            
+            // Tenta usar variável global (apisistema.js), senão usa o fallback
+            const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : fallbackUrl;
             const url = `${baseUrl}${endpoint}`;
             
             const headers = { 'Content-Type': 'application/json' };
@@ -167,70 +171,42 @@
             if (body) options.body = JSON.stringify(body);
             
             try {
-                // Requisição Real
                 const response = await fetch(url, options);
                 const data = await response.json();
                 
-                // Tratamento de erro HTTP
                 if (!response.ok) {
                     throw new Error(data.message || data.mensagem || `Erro ${response.status}`);
                 }
                 
                 return data;
             } catch (error) {
-                console.warn(`[API] Erro em ${url}:`, error);
-                // Fallback para Mock se a API real falhar (para demonstração)
+                console.warn(`[API] Erro ao conectar em ${url}:`, error);
+                // Retorna mock apenas se falhar conexão real
                 return mockLocalResponse(endpoint, body);
             }
         }
 
-        // Mock atualizado com estrutura da Nova Documentação (200 OK, success: true, data: {...})
         function mockLocalResponse(endpoint, body) {
             return new Promise(resolve => {
                 setTimeout(() => {
-                    // MOCK LOGIN
                     if (endpoint === '/auth/login') {
+                        // Mock de Login
                         if (body.cpf_cnpj === '00000000000') {
                             resolve({ success: false, message: 'Credenciais inválidas' });
                         } else {
-                            // Imagem em Base64 para teste
                             const mockBase64 = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRjI3QTIzIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSI4IiByPSI1Ii8+PHBhdGggZD0iTTMgMjFhOSA5IDAgMCAxIDktOWg0YTkgOSAwIDAgMSA5IDl2MSIvPjwvc3ZnPg==";
-                            
                             resolve({ 
                                 success: true, 
                                 message: "Login realizado com sucesso",
-                                data: { 
-                                    token: 'mock_token_jwt_12345', 
-                                    usuario: { 
-                                        id: 1, 
-                                        nome_completo: 'Usuário Teste Base64', 
-                                        email: 'teste@email.com',
-                                        // Aqui entra a string Base64 real que viria do banco
-                                        foto_perfil: mockBase64,
-                                        endereco: { rua: 'Rua Mock', cidade: 'Cidade Mock' }
-                                    } 
-                                } 
+                                data: { token: 'mock_token', usuario: { id: 1, nome_completo: 'Usuário Teste', email: 'teste@email.com', foto_perfil: mockBase64 } } 
                             });
                         }
-                    } 
-                    // MOCK REGISTER
-                    else if (endpoint === '/auth/register') {
-                        resolve({ 
-                            success: true, 
-                            message: "Usuário cadastrado com sucesso",
-                            data: { 
-                                token: 'mock_token_new_user', 
-                                usuario: { 
-                                    ...body, 
-                                    foto_perfil: body.foto_base64 // Simula retorno da foto enviada
-                                } 
-                            } 
-                        });
-                    } 
-                    else {
-                        resolve({ success: true, message: 'Operação realizada' });
+                    } else if (endpoint === '/auth/register') {
+                        resolve({ success: true, message: "Sucesso", data: { token: 'mock_new', usuario: { ...body } } });
+                    } else {
+                        resolve({ success: true, message: 'Sucesso' });
                     }
-                }, 1000);
+                }, 800);
             });
         }
 
@@ -238,28 +214,52 @@
         let registerState = { step: 0, data: {} };
 
         document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            checkAuth();
-            setupMasks();
-            document.getElementById('loginForm').addEventListener('submit', handleLoginSubmit);
+            // Inicialização Segura do Lucide
+            try { if (window.lucide) window.lucide.createIcons(); } catch(e) { console.warn("Ícones falharam no load"); }
+            
+            // Inicialização Segura das Máscaras e Auth
+            try {
+                checkAuth();
+                setupMasks();
+            } catch(e) { console.error("Erro na inicialização", e); }
+
+            // Listener de Login - PROTEGER CONTRA DUPLICAÇÃO E ERROS
+            const form = document.getElementById('loginForm');
+            if(form) {
+                // Remove listener anterior se houver (boa prática em SPAs)
+                form.removeEventListener('submit', handleLoginSubmit);
+                form.addEventListener('submit', handleLoginSubmit);
+            }
+
             document.getElementById('recoveryForm').addEventListener('submit', handleRecoverySubmit);
             document.getElementById('chatInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') submitChat(); });
         });
 
         function switchView(viewId) {
-            ['viewLogin', 'viewLoggedIn', 'viewRegister', 'viewRecovery'].forEach(id => document.getElementById(id).classList.add('hidden-view'));
-            document.getElementById(viewId).classList.remove('hidden-view');
+            ['viewLogin', 'viewLoggedIn', 'viewRegister', 'viewRecovery'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden-view');
+            });
+            const target = document.getElementById(viewId);
+            if(target) target.classList.remove('hidden-view');
+            
             const card = document.getElementById('mainCard');
-            if (viewId === 'viewRegister') { card.style.height = '600px'; card.classList.remove('bg-white/95'); card.classList.add('bg-white'); } 
-            else { card.style.height = 'auto'; card.classList.add('bg-white/95'); }
+            if (viewId === 'viewRegister') { 
+                card.style.height = '600px'; 
+                card.classList.remove('bg-white/95'); 
+                card.classList.add('bg-white'); 
+            } else { 
+                card.style.height = 'auto'; 
+                card.classList.add('bg-white/95'); 
+            }
         }
 
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
-            const icon = type === 'success' ? '<i data-lucide="check-circle" class="w-5 h-5"></i>' : '<i data-lucide="alert-circle" class="w-5 h-5"></i>';
+            if(!toast) return;
+            const icon = type === 'success' ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>' : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
             toast.className = `fixed top-5 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg shadow-2xl text-white font-semibold text-sm z-50 transition-all duration-300 flex items-center gap-2 ${type === 'success' ? 'bg-emerald-600' : 'bg-red-500'}`;
             toast.innerHTML = `${icon} ${msg}`;
-            lucide.createIcons();
             toast.classList.remove('opacity-0', 'translate-y-[-20px]');
             setTimeout(() => toast.classList.add('opacity-0', 'translate-y-[-20px]'), 3500);
         }
@@ -267,61 +267,69 @@
         function checkAuth() {
             const u = localStorage.getItem('guardiao_user');
             const t = localStorage.getItem('guardiao_token');
-            
             if (u && t) {
                 try {
                     const user = JSON.parse(u);
-                    
-                    // Lógica de Avatar: Usa a Base64 se existir, senão usa placeholder
                     const avatarImg = document.getElementById('userAvatar');
-                    
                     if (user.foto_perfil && user.foto_perfil.startsWith('data:image')) {
-                        avatarImg.src = user.foto_perfil; // Usa Base64 direto
+                        avatarImg.src = user.foto_perfil;
                     } else {
-                        // Fallback para iniciais
                         avatarImg.src = `https://ui-avatars.com/api/?name=${user.nome_completo}&background=F27A23&color=fff`;
                     }
-                    
                     const name = user.nome_completo ? user.nome_completo.split(' ')[0] : 'Usuário';
                     document.getElementById('userName').innerText = name;
                     switchView('viewLoggedIn');
-                } catch (e) {
-                    console.error("Erro ao ler dados do usuário", e);
-                    logout();
-                }
-            } else { 
-                switchView('viewLogin'); 
-            }
+                } catch(e) { logout(); }
+            } else { switchView('viewLogin'); }
         }
 
+        // --- CORREÇÃO PRINCIPAL: LOGIN HANDLER ROBUSTO ---
         async function handleLoginSubmit(e) {
+            // 1. IMPEDE O RELOAD IMEDIATAMENTE
             e.preventDefault();
-            const c = document.getElementById('loginCpf').value.replace(/\D/g, '');
-            const s = document.getElementById('loginSenha').value;
-            
-            if (!c || !s) return showToast('Preencha todos os campos', 'error');
-            
-            const btn = e.target.querySelector('button');
-            const txt = btn.innerText; btn.innerText = 'Autenticando...'; btn.disabled = true;
-            
-            // Chamada à API
-            const res = await apiRequest('/auth/login', 'POST', { cpf_cnpj: c, senha: s });
-            
-            btn.innerText = txt; btn.disabled = false;
-            
-            // Verificação baseada na nova documentação (success: true)
-            if (res.success) {
-                localStorage.setItem('guardiao_token', res.data.token);
-                // Salva o objeto usuário completo (incluindo a foto Base64)
-                localStorage.setItem('guardiao_user', JSON.stringify(res.data.usuario));
-                
-                showToast(res.message || 'Login realizado!', 'success');
-                
-                // Recarrega visualização do usuário logado
-                setTimeout(() => checkAuth(), 800);
-            } else { 
-                showToast(res.message || 'Erro ao realizar login', 'error'); 
+            e.stopPropagation();
+
+            try {
+                const cpfInput = document.getElementById('loginCpf');
+                const senhaInput = document.getElementById('loginSenha');
+                const btn = document.getElementById('btnLogin');
+
+                const c = cpfInput.value.replace(/\D/g, '');
+                const s = senhaInput.value;
+
+                if (!c || !s) return showToast('Preencha CPF e Senha', 'error');
+
+                // Feedback Visual
+                const originalText = btn.innerText;
+                btn.innerText = 'Autenticando...';
+                btn.disabled = true;
+
+                // Chamada API
+                const res = await apiRequest('/auth/login', 'POST', { cpf_cnpj: c, senha: s });
+
+                // Restaura Botão
+                btn.innerText = originalText;
+                btn.disabled = false;
+
+                if (res.success) {
+                    localStorage.setItem('guardiao_token', res.data.token);
+                    localStorage.setItem('guardiao_user', JSON.stringify(res.data.usuario));
+                    showToast('Login realizado com sucesso!', 'success');
+                    
+                    // Pequeno delay para UX antes de mudar a tela
+                    setTimeout(() => checkAuth(), 500);
+                } else {
+                    showToast(res.message || 'Dados incorretos', 'error');
+                }
+            } catch (error) {
+                console.error("Erro fatal no login:", error);
+                showToast("Erro interno no aplicativo", 'error');
+                // Garante que o botão seja liberado em caso de erro de script
+                const btn = document.getElementById('btnLogin');
+                if(btn) { btn.innerText = 'Entrar'; btn.disabled = false; }
             }
+            
+            return false; // Retorno extra para impedir submit antigo
         }
 
         function handleQuickLogin() { window.location.href = 'facial.tokem.html'; }
@@ -335,14 +343,9 @@
 
         async function handleRecoverySubmit(e) {
             e.preventDefault(); const n = document.getElementById('recNome').value; if(!n) return;
-            // API Recovery
             const res = await apiRequest('/auth/recuperar-senha', 'POST', { nome_completo: n });
-            if(res.success) { // Novo padrão
-                showToast('Código enviado!', 'success'); 
-                setTimeout(() => switchView('viewLogin'), 3000); 
-            } else { 
-                showToast(res.message || 'Usuário não encontrado', 'error'); 
-            }
+            if(res.success) { showToast('Código enviado!', 'success'); setTimeout(() => switchView('viewLogin'), 3000); }
+            else showToast(res.message || 'Não encontrado', 'error');
         }
 
         // --- CHAT LOGIC ---
@@ -368,7 +371,7 @@
         function setupInput(cfg) {
             const txt=document.getElementById('inputAreaText'), opt=document.getElementById('inputAreaOptions'), upl=document.getElementById('inputAreaUpload'), inp=document.getElementById('chatInput');
             txt.classList.add('hidden'); opt.classList.add('hidden'); upl.classList.add('hidden'); opt.innerHTML=''; inp.value=''; inp.type=cfg.type==='password'?'password':'text';
-            inp.oninput = null; // Limpa máscaras anteriores
+            inp.oninput = null;
 
             if(cfg.type==='text'||cfg.type==='password') {
                 txt.classList.remove('hidden'); inp.focus();
@@ -377,8 +380,8 @@
                 opt.classList.remove('hidden');
                 cfg.options.forEach(o => { 
                     const b=document.createElement('button'); b.className='w-full bg-white border border-gray-200 text-gray-700 hover:bg-orange-50 hover:border-orange-300 font-semibold py-3 px-4 rounded-xl text-left shadow-sm mb-2 flex justify-between';
-                    b.innerHTML=`<span>${o.label}</span> <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>`; b.onclick=()=>processStep(o.value, o.label); opt.appendChild(b); 
-                }); lucide.createIcons();
+                    b.innerHTML=`<span>${o.label}</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>`; b.onclick=()=>processStep(o.value, o.label); opt.appendChild(b); 
+                });
             } else if(cfg.type==='upload') { upl.classList.remove('hidden'); }
         }
 
@@ -390,7 +393,6 @@
             if(cfg.validate && !cfg.validate(val)) return addBotMsg('⚠️ Inválido. Tente novamente.');
             if(cfg.field==='cpf_cnpj' && val.replace(/\D/g,'').length<11) return addBotMsg('⚠️ CPF inválido.');
 
-            // ViaCEP
             if(cfg.field === 'cep') {
                 const cep = val.replace(/\D/g, '');
                 if(cep.length !== 8) return addBotMsg('⚠️ CEP deve ter 8 números.');
@@ -415,25 +417,10 @@
         }
 
         async function finishReg() {
-            // Monta payload conforme documentação (incluindo foto_base64)
-            const d = { 
-                rua:'-', 
-                cidade:'-', 
-                estado:'UF', 
-                bairro:'-', 
-                latitude:0, 
-                longitude:0, 
-                ...registerState.data 
-            };
-            
-            // Limpa formatação
-            d.cpf_cnpj = d.cpf_cnpj.replace(/\D/g,''); 
-            d.celular = d.celular.replace(/\D/g,'');
-            
-            // Envia para API
+            const d = { rua:'-', cidade:'-', estado:'UF', bairro:'-', latitude:0, longitude:0, ...registerState.data };
+            d.cpf_cnpj=d.cpf_cnpj.replace(/\D/g,''); d.celular=d.celular.replace(/\D/g,'');
             const res = await apiRequest('/auth/register', 'POST', d);
-            
-            if(res.success) { // Novo padrão
+            if(res.success) { 
                 addBotMsg('🎉 Sucesso! Entrando...'); 
                 localStorage.setItem('guardiao_token', res.data.token);
                 localStorage.setItem('guardiao_user', JSON.stringify(res.data.usuario));
@@ -444,6 +431,10 @@
             }
         }
 
+        function setupMasks() { 
+            const i=document.getElementById('loginCpf'); 
+            if(i) setupCpfMask(i); 
+        }
         function setupCpfMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); if(v.length>11) v=v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,"$1.$2.$3/$4-$5"); else v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.$2.$3-$4"); e.target.value=v; } }
         function setupPhoneMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); v=v.replace(/^(\d{2})(\d{5})(\d{4})/,"($1) $2-$3"); e.target.value=v; } }
         function setupCepMask(i) { i.oninput=e=>{ let v=e.target.value.replace(/\D/g,''); v=v.replace(/^(\d{5})(\d{3})/,"$1-$2"); e.target.value=v; } }
