@@ -49,7 +49,6 @@
 
         .hidden-view { display: none !important; }
         
-        /* Animações Modal */
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
         
@@ -97,7 +96,7 @@
                     <p id="globalStatusText" class="text-sm font-semibold">Verificando status...</p>
                 </div>
                 <p class="text-xs text-white/70 mt-1 leading-relaxed">
-                    Envie os documentos solicitados para ativar seu perfil profissional.
+                    Você pode enviar múltiplos arquivos (ex: frente e verso) de uma vez.
                 </p>
             </div>
         </div>
@@ -120,7 +119,6 @@
     <!-- 1. MODAL DE AVISO LEGAL (LGPD) -->
     <div id="infoModal" class="hidden-view fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/80 backdrop-blur-sm fade-in">
         <div class="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-3xl p-6 animate-slide-up shadow-2xl relative overflow-hidden">
-            <!-- Barra colorida topo -->
             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#F27A23] to-orange-400"></div>
 
             <div class="flex flex-col items-center text-center mb-5 mt-2">
@@ -132,13 +130,13 @@
 
             <div class="space-y-4 text-sm text-gray-600 bg-gray-50 p-5 rounded-2xl border border-gray-100 max-h-[60vh] overflow-y-auto leading-relaxed">
                 <p>
-                    <strong class="text-gray-800">Regras da Plataforma:</strong> De acordo com os Termos de Uso, o envio dos documentos é <strong>obrigatório e indispensável</strong> para a validação de sua identidade e segurança da comunidade Guardião.
+                    <strong class="text-gray-800">Regras da Plataforma:</strong> De acordo com os Termos de Uso, o envio dos documentos é <strong>obrigatório e indispensável</strong> para a validação de sua identidade.
                 </p>
                 <p>
-                    <strong class="text-gray-800">Processo de Análise:</strong> Atualmente, sua documentação passa por uma <strong>validação manual rigorosa</strong> por nossa equipe de segurança. Em breve, utilizaremos modelos avançados de Inteligência Artificial para agilizar este processo.
+                    <strong class="text-gray-800">Processo de Análise:</strong> Atualmente, sua documentação passa por uma <strong>validação manual rigorosa</strong>. Em breve, utilizaremos IA para agilizar este processo.
                 </p>
                 <p>
-                    <strong class="text-gray-800">Segurança de Dados:</strong> Seus dados são criptografados e armazenados em nossos servidores seguros. <strong>Não compartilhamos</strong> suas informações com terceiros para fins comerciais.
+                    <strong class="text-gray-800">Segurança de Dados:</strong> Seus dados são criptografados e armazenados em nossos servidores seguros. <strong>Não compartilhamos</strong> suas informações com terceiros.
                 </p>
             </div>
 
@@ -153,7 +151,7 @@
         </div>
     </div>
 
-    <!-- 2. MODAL DE UPLOAD -->
+    <!-- 2. MODAL DE UPLOAD (AGORA SUPORTA MÚLTIPLOS ARQUIVOS) -->
     <div id="uploadModal" class="hidden-view fixed inset-0 z-[60] flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm fade-in">
         <div class="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-3xl p-6 animate-slide-up shadow-2xl">
             <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
@@ -162,29 +160,31 @@
                 <h3 class="text-lg font-bold text-gray-800" id="modalDocTitle">Enviar Documento</h3>
                 <button onclick="closeUploadModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            <p class="text-sm text-gray-500 mb-6">Foto nítida, sem cortes e sem reflexos.</p>
+            <p class="text-sm text-gray-500 mb-6">Selecione uma ou mais fotos (Ex: Frente e Verso).</p>
 
             <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center mb-6 hover:bg-gray-50 hover:border-orange-300 transition-all relative group cursor-pointer">
-                <input type="file" id="fileInput" accept="image/*,application/pdf" class="absolute inset-0 opacity-0 cursor-pointer z-10" onchange="handleFileSelect(this)">
+                <!-- Adicionado 'multiple' para permitir mais de um arquivo -->
+                <input type="file" id="fileInput" accept="image/*,application/pdf" multiple class="absolute inset-0 opacity-0 cursor-pointer z-10" onchange="handleFileSelect(this)">
                 
                 <div id="uploadPlaceholder" class="transition-opacity">
                     <div class="w-14 h-14 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-3 text-[#F27A23] group-hover:scale-110 transition-transform">
-                        <i data-lucide="upload-cloud" class="w-7 h-7"></i>
+                        <i data-lucide="layers" class="w-7 h-7"></i>
                     </div>
                     <span class="text-sm text-[#F27A23] font-bold block">Toque para selecionar</span>
-                    <span class="text-xs text-gray-400 mt-1 block">JPG, PNG ou PDF (Max 10MB)</span>
+                    <span class="text-xs text-gray-400 mt-1 block">Suporta múltiplos arquivos</span>
                 </div>
                 
                 <div id="uploadPreview" class="hidden flex-col items-center">
                     <div class="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-3 text-green-500">
                         <i data-lucide="file-check" class="w-7 h-7"></i>
                     </div>
-                    <span id="fileName" class="text-sm font-bold text-gray-700 truncate w-full px-4">arquivo.jpg</span>
-                    <span class="text-xs text-green-600 mt-1">Arquivo selecionado</span>
+                    <!-- Mostra quantos arquivos foram selecionados -->
+                    <span id="fileName" class="text-sm font-bold text-gray-700 truncate w-full px-4"></span>
+                    <span class="text-xs text-green-600 mt-1">Pronto para envio</span>
                 </div>
             </div>
 
-            <button id="btnSendDoc" onclick="submitDocument()" disabled class="w-full bg-[#F27A23] disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+            <button id="btnSendDoc" onclick="submitDocumentsBatch()" disabled class="w-full bg-[#F27A23] disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
                 Enviar para Análise
             </button>
         </div>
@@ -234,7 +234,6 @@
             if (isPrestador) {
                 loadDocuments();
             } else {
-                // Roteamento para clientes
                 window.location.href = 'Sistemafamiliaidoso/boas.vindas.html'; 
             }
         }
@@ -242,7 +241,6 @@
         // --- CARREGAR DADOS ---
         async function loadDocuments() {
             try {
-                // Endpoint 2.3 (Listar) da nova doc: GET /api/documentos/usuario/:id
                 const res = await apiRequest(`/documentos/usuario/${currentUser.id}`);
                 
                 if (res.success) {
@@ -255,7 +253,7 @@
                 }
             } catch (error) {
                 console.error(error);
-                showToast('Erro ao sincronizar documentos.', 'error');
+                // Em caso de erro (ex: usuário novo sem documentos), assumimos lista vazia para não travar
                 document.getElementById('pageLoading').classList.add('hidden-view');
                 document.getElementById('mainContent').classList.remove('hidden-view');
                 renderDocumentsList(); 
@@ -287,7 +285,6 @@
                     }
                 } else {
                     allApproved = false;
-                    // Botão de envio abre primeiro o Modal de Info/LGPD
                     actionHtml = `<button onclick="openInfoModal('${reqDoc.label}')" class="bg-[#F27A23] text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:bg-orange-600 active:scale-95 transition-transform flex items-center gap-1">Enviar <i data-lucide="arrow-right" class="w-3 h-3"></i></button>`;
                 }
 
@@ -336,7 +333,6 @@
 
         // --- FLUXO DE MODAIS ---
         
-        // 1. Abre Modal de Aviso Legal
         function openInfoModal(docLabel) {
             currentDocType = docLabel;
             document.getElementById('infoModal').classList.remove('hidden-view');
@@ -346,7 +342,6 @@
             document.getElementById('infoModal').classList.add('hidden-view');
         }
 
-        // 2. Confirma Info e Abre Upload
         function confirmInfoAndOpenUpload() {
             closeInfoModal();
             document.getElementById('modalDocTitle').innerText = currentDocType;
@@ -365,64 +360,83 @@
             document.getElementById('uploadModal').classList.add('hidden-view');
         }
 
-        // --- UPLOAD E ENVIO ---
+        // --- UPLOAD E ENVIO (LOTE/MÚLTIPLO) ---
         function handleFileSelect(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                if(file.size > 10 * 1024 * 1024) { // 10MB conforme doc
-                    showToast('Arquivo muito grande (Máx 10MB)', 'error'); 
+            if (input.files && input.files.length > 0) {
+                const files = input.files;
+                const count = files.length;
+                
+                // Validação simples de tamanho (opcional: validar cada arquivo)
+                if(files[0].size > 10 * 1024 * 1024) {
+                    showToast('Um dos arquivos é muito grande (Máx 10MB)', 'error'); 
                     input.value = ''; return; 
                 }
                 
                 document.getElementById('uploadPlaceholder').classList.add('hidden');
                 document.getElementById('uploadPreview').classList.remove('hidden');
                 document.getElementById('uploadPreview').classList.add('flex');
-                document.getElementById('fileName').innerText = file.name;
+                
+                const fileNameSpan = document.getElementById('fileName');
+                fileNameSpan.innerText = count === 1 ? files[0].name : `${count} arquivos selecionados`;
+                
                 document.getElementById('btnSendDoc').disabled = false;
             }
         }
 
-        async function submitDocument() {
+        async function submitDocumentsBatch() {
             const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-            if (!file) return;
+            const files = fileInput.files;
+            if (!files || files.length === 0) return;
 
             const btn = document.getElementById('btnSendDoc');
             const originalText = btn.innerHTML;
             btn.disabled = true; 
-            btn.innerHTML = `<div class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div> Enviando...`;
+            btn.innerHTML = `<div class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div> Processando...`;
 
             try {
-                // PASSO 1: Upload do Arquivo (Endpoint 1.1: /api/arquivos/upload)
-                const formData = new FormData();
-                formData.append('arquivo', file); // Doc aceita 'arquivo' ou 'documento'
-                
-                const uploadUrl = `${API_BASE_URL}/arquivos/upload`;
-                
-                const uploadRes = await fetch(uploadUrl, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: formData
-                });
+                const uploadedFileIds = [];
 
-                const uploadData = await uploadRes.json();
-                
-                if (!uploadRes.ok || !uploadData.success) {
-                    throw new Error(uploadData.message || "Erro no upload do arquivo");
+                // 1. Upload Individual de cada arquivo selecionado
+                // (A API de upload /arquivos/upload recebe UM arquivo por vez segundo padrão REST comum,
+                //  mas o input 'multiple' permite selecionar vários)
+                const uploadUrl = `${API_BASE_URL}/arquivos/upload`;
+
+                for (let i = 0; i < files.length; i++) {
+                    const formData = new FormData();
+                    formData.append('arquivo', files[i]); // Nome do campo 'arquivo' ou 'documento'
+
+                    console.log(`[Upload] Enviando arquivo ${i+1}/${files.length}...`);
+                    const uploadRes = await fetch(uploadUrl, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        body: formData
+                    });
+
+                    const uploadData = await uploadRes.json();
+                    
+                    if (!uploadRes.ok || !uploadData.success) {
+                        throw new Error(`Erro no upload do arquivo ${files[i].name}`);
+                    }
+                    
+                    // Guarda o ID retornado
+                    uploadedFileIds.push(uploadData.data.id);
                 }
 
-                const arquivoId = uploadData.data.id; 
-
-                // PASSO 2: Criar Documento (Endpoint 2.1: /api/documentos)
-                const docPayload = { 
-                    arquivo_id: arquivoId, 
-                    tipo_documento: currentDocType 
-                };
+                // 2. Enviar IDs para a API de Documentos usando a estrutura de Múltiplos Arquivos
+                // Payload: { "arquivos": [ { "arquivo_id": 1, "tipo_documento": "RG" }, ... ] }
                 
-                const docRes = await apiRequest('/documentos', 'POST', docPayload);
+                const batchPayload = {
+                    arquivos: uploadedFileIds.map(id => ({
+                        arquivo_id: id,
+                        tipo_documento: currentDocType
+                    }))
+                };
+
+                console.log("[API] Enviando lote para validação:", batchPayload);
+                const docRes = await apiRequest('/documentos', 'POST', batchPayload);
 
                 if (docRes.success) {
-                    showToast('Documento enviado com sucesso!', 'success');
+                    showToast(`${uploadedFileIds.length} documento(s) enviado(s) com sucesso!`, 'success');
                     closeUploadModal();
                     loadDocuments(); 
                 } else { 
@@ -458,7 +472,6 @@
             const response = await fetch(url, options);
             const data = await response.json();
             
-            // Tratamento padronizado de erro (400, 404, 500)
             if (!response.ok) {
                 throw new Error(data.message || data.mensagem || `Erro ${response.status}`);
             }
