@@ -179,7 +179,7 @@
             
             <h2 class="text-2xl font-bold text-gray-800 mb-2">Validação de Segurança</h2>
             <p class="text-gray-500 text-sm mb-8 px-4">
-                Devido a múltiplas tentativas ou instabilidade, enviamos um código de 4 dígitos para seu e-mail.
+                Devido a múltiplas tentativas ou instabilidade na biometria, enviamos um código de 4 dígitos para seu e-mail.
             </p>
 
             <div class="flex justify-center gap-3 mb-8">
@@ -215,9 +215,9 @@
         let token = null;
         let biometryMode = null; 
         let stream = null;
-        let attemptCount = 0; // Contador de tentativas
+        let attemptCount = 0; 
         const MAX_ATTEMPTS = 3;
-        let generatedCode = null; // Código gerado para validação
+        let generatedCode = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             try { if (window.lucide) window.lucide.createIcons(); } catch(e){}
@@ -234,7 +234,6 @@
                 currentUser = JSON.parse(u);
                 token = t;
                 
-                // DEBUG: Exibir tipo de acesso para conferência
                 const debugEl = document.getElementById('debugUserType');
                 if (debugEl) debugEl.innerText = currentUser.tipo_acesso || 'INDEFINIDO';
 
@@ -251,7 +250,8 @@
             showLoading("Consultando Banco de Dados...", "Verificando registro biométrico do usuário.");
             
             try {
-                const response = await apiRequest(`/verificacao/usuario/${currentUser.id}/biometria`);
+                // NOVO ENDPOINT CONFORME DOCUMENTAÇÃO: /usuario/:id/biometria
+                const response = await apiRequest(`/usuario/${currentUser.id}/biometria`);
                 await new Promise(r => setTimeout(r, 1000));
 
                 if (response.success && response.data.tem_biometria_facial === true) {
@@ -315,10 +315,11 @@
 
             try {
                 let endpoint = '';
+                // NOVOS ENDPOINTS
                 if (biometryMode === 'AUTH') {
-                    endpoint = `/verificacao/usuario/${currentUser.id}/biometria/autenticar`;
+                    endpoint = `/usuario/${currentUser.id}/biometria/autenticar`;
                 } else {
-                    endpoint = `/verificacao/usuario/${currentUser.id}/biometria`;
+                    endpoint = `/usuario/${currentUser.id}/biometria`;
                 }
 
                 const res = await apiRequest(endpoint, 'POST', { foto_base64: fotoBase64 });
@@ -326,27 +327,23 @@
                 if (res.success) {
                     handleSuccess(biometryMode === 'AUTH' ? 'Identidade confirmada.' : 'Biometria cadastrada.');
                 } else {
-                    // Se falhar, lança erro com mensagem
                     throw new Error(res.message || "Validação falhou.");
                 }
 
             } catch (error) {
-                // --- LÓGICA DE CONTINGÊNCIA (ERRO OU 3 TENTATIVAS) ---
                 attemptCount++;
-                
                 console.warn(`Tentativa ${attemptCount} falhou. Erro: ${error.message}`);
 
-                // Verifica se é erro de concorrência OU limite de tentativas
-                const isConcurrencyError = error.message && error.message.includes('CONCURRENCY_LIMIT_EXCEEDED');
+                // Detecta erros de concorrência ou muitas requisições (conforme nova doc)
+                const errMsg = error.message.toLowerCase();
+                const isConcurrencyError = errMsg.includes('concurrency') || errMsg.includes('muitas requisições') || errMsg.includes('limit');
                 
                 if (isConcurrencyError || attemptCount >= MAX_ATTEMPTS) {
                     stopCamera();
-                    // Inicia fluxo de Email Fallback
                     initEmailFallback();
                     return;
                 }
 
-                // Erro normal (ainda tem tentativas)
                 scanLine.classList.add('hidden');
                 btn.classList.remove('scale-90', 'opacity-50', 'pointer-events-none');
                 showResult('error', `Falha (${attemptCount}/${MAX_ATTEMPTS})`, error.message || 'Rosto não reconhecido. Tente novamente.');
@@ -357,18 +354,10 @@
         function initEmailFallback() {
             hideAllViews();
             stopCamera();
-            
-            // Gera código de 4 dígitos
             generatedCode = Math.floor(1000 + Math.random() * 9000).toString();
             console.log("Código de Segurança Gerado:", generatedCode);
-
-            // Exibe a tela de input
             document.getElementById('emailFallbackState').classList.remove('hidden-view');
-            
-            // Simula envio de email (API Real para logar, Toast para usuário ver o código em ambiente de dev)
             showToast(`Código enviado para seu e-mail: ${generatedCode}`, 'success');
-            
-            // Limpa inputs
             document.querySelectorAll('.otp-input').forEach(input => input.value = '');
             document.querySelector('.otp-input').focus();
         }
@@ -382,22 +371,18 @@
                 handleSuccess("Dispositivo validado por código de segurança.");
             } else {
                 showToast("Código incorreto. Verifique seu e-mail.", 'error');
-                // Limpa e foca
                 inputs.forEach(input => input.value = '');
                 inputs[0].focus();
             }
         }
 
-        // --- ROTEAMENTO E SUCESSO ---
+        // --- ROTEAMENTO ---
         function handleSuccess(msg) {
             stopCamera();
             localStorage.setItem(`device_verified_user_${currentUser.id}`, 'true');
             showResult('success', 'Sucesso', msg);
             
-            // --- ROTEAMENTO CORRIGIDO E EXPLÍCITO ---
             const tipo = currentUser.tipo_acesso ? currentUser.tipo_acesso.toLowerCase() : '';
-            
-            // Lista de palavras-chave para identificar prestadores
             const isPrestador = ['cuidador', 'prestador', 'saude', 'baba', 'enfermeiro'].some(role => tipo.includes(role));
 
             setTimeout(() => {
@@ -411,7 +396,6 @@
             }, 2500);
         }
 
-        // --- HELPER INPUTS OTP ---
         function focusNext(input) {
             if (input.value.length >= 1) {
                 const next = input.nextElementSibling;
@@ -435,17 +419,22 @@
             
             const response = await fetch(url, options);
             
-            // Tratamento especial para status 429 ou concurrency se vier em texto
-            if (response.status === 429) {
-                throw new Error('CONCURRENCY_LIMIT_EXCEEDED');
+            if (response.status === 429 || response.status === 500) {
+                // Verifica se é erro de concorrência
+                const clone = response.clone();
+                try {
+                    const errData = await clone.json();
+                    if (errData.message && (errData.message.includes('concurrency') || errData.message.includes('simultâneas'))) {
+                        throw new Error('CONCURRENCY_LIMIT_EXCEEDED');
+                    }
+                } catch(e) {}
             }
 
             const data = await response.json();
             
             if (!response.ok) {
-                // Verifica se a mensagem de erro contém a flag de concorrência
                 const msg = data.message || data.mensagem || '';
-                if (msg.includes('CONCURRENCY')) {
+                if (msg.includes('CONCURRENCY') || msg.includes('simultâneas')) {
                     throw new Error('CONCURRENCY_LIMIT_EXCEEDED');
                 }
                 throw new Error(msg || `Erro ${response.status}`);
@@ -453,7 +442,6 @@
             return data;
         }
 
-        // --- UI HELPERS ---
         function showLoading(title, text) {
             document.getElementById('loadingTitle').innerText = title;
             document.getElementById('loadingText').innerText = text;
