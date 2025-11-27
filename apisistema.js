@@ -1,1 +1,1 @@
-const API_BASE_URL = "https://3005-ir2d6o1hpefbv4vi6can5-c558d0a4.manusvm.computer/api";
+const API_BASE_URL = "https://apis.appguardiaomais.com.br/api";
